@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "users": "Usuarios",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión"
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "search": "Buscar"
+  },
+  "dashboard": {
+    "welcome": "Bienvenido al sistema"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "email": "Email",
+    "password": "Contraseña"
+  }
+}

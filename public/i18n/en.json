@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "home": "Home",
+    "users": "Users",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search"
+  },
+  "dashboard": {
+    "welcome": "Welcome to the system"
+  },
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password"
+  }
+}
