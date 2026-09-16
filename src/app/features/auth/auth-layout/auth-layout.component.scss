@@ -1,0 +1,126 @@
+.auth-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.panel-left {
+  width: 45%;
+  background: #EFF6FF;
+  border-right: 1px solid #BFDBFE;
+  display: flex;
+  flex-direction: column;
+  padding: 3rem;
+  justify-content: space-between;
+
+  @media (max-width: 1024px) {
+    display: none;
+  }
+}
+
+.brand-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  width: 48px;
+  height: 48px;
+  background: #2563EB;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1E40AF;
+  letter-spacing: -0.025em;
+}
+
+.tagline-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tagline-title {
+  font-size: 3rem;
+  font-weight: 300;
+  line-height: 1.1;
+  color: #1E293B;
+  margin: 0;
+
+  .highlight {
+    font-weight: 700;
+    color: #2563EB;
+    font-size: 2.5rem;
+  }
+}
+
+.tagline-subtitle {
+  font-size: 1.125rem;
+  color: #64748B;
+  line-height: 1.6;
+  max-width: 28rem;
+  margin: 0;
+}
+
+.medical-icon {
+  color: #93C5FD;
+  opacity: 0.5;
+}
+
+.brand-footer {
+  font-size: 0.6875rem;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+
+.panel-right {
+  width: 55%;
+  background: #F9FAFB;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+  }
+}
+
+.form-container {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.footer-links {
+  margin-top: 3rem;
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.75rem;
+  color: #9CA3AF;
+
+  a {
+    color: #9CA3AF;
+    text-decoration: none;
+    transition: color 0.15s;
+
+    &:hover {
+      color: #6B7280;
+    }
+  }
+}
