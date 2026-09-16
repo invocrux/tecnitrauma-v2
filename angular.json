@@ -90,10 +90,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "habitat-base:build:production"
+              "buildTarget": "tecnitrauma-v2:build:production"
             },
             "development": {
-              "buildTarget": "habitat-base:build:development"
+              "buildTarget": "tecnitrauma-v2:build:development"
             }
           },
           "defaultConfiguration": "development"
