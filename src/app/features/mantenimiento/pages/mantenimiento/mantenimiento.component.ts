@@ -74,7 +74,7 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
 
               <div class="form-field">
                 <label for="numRemision">N° de remisión</label>
-                <input id="numRemision" type="text" [(ngModel)]="form.num_remision" name="num_remision" disabled />
+                <input id="numRemision" type="text" [(ngModel)]="form.num_remision" name="num_remision" />
               </div>
 
               <div class="form-field">
@@ -99,7 +99,7 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
 
               <div class="form-field">
                 <label for="serial">Serial</label>
-                <input id="serial" type="text" [(ngModel)]="form.serial" name="serial" disabled />
+                <input id="serial" type="text" [(ngModel)]="form.serial" name="serial" />
               </div>
             </div>
           </section>
@@ -547,10 +547,10 @@ export class MantenimientoComponent implements OnInit {
   private emptyForm(): MantenimientoForm {
     return {
       tipo: null,
-      num_remision: this.service.numRemision(),
+      num_remision: '',
       marca_id: null,
       equipo_id: null,
-      serial: this.service.numSerial(),
+      serial: '',
       pieza: '',
       referencia: '',
       fecha: this.service.getTodayDate(),
