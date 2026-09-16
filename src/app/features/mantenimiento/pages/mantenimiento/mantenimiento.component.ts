@@ -214,7 +214,7 @@ import type { MantenimientoForm } from '../../utils/interface';
     .form-field {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.375rem;
     }
 
     .form-field.full-width {
@@ -228,24 +228,30 @@ import type { MantenimientoForm } from '../../utils/interface';
     }
 
     input, select, textarea {
-      padding: 0.5rem 0.75rem;
+      padding: 0.625rem 1rem;
       font-size: 0.875rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.375rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.5rem;
       background: #fff;
-      color: #374151;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      color: #1e293b;
+      transition: all 0.15s;
       font-family: inherit;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
     input::placeholder, textarea::placeholder {
-      color: #9ca3af;
+      color: #94a3b8;
+    }
+
+    input:hover, select:hover, textarea:hover {
+      border-color: #94a3b8;
     }
 
     textarea {
