@@ -75,9 +75,14 @@
   margin: 0;
 }
 
-.medical-icon {
-  color: #93C5FD;
-  opacity: 0.5;
+.lottie-animation {
+  width: 100%;
+  max-width: 400px;
+
+  ::ng-deep lottie {
+    width: 100%;
+    height: auto;
+  }
 }
 
 .brand-footer {

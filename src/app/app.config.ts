@@ -5,6 +5,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideTranslateService } from '@ngx-translate/core';
 import { TranslateLoader } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
+import { provideLottieOptions } from 'ngx-lottie';
 
 import { routes } from './app.routes';
 
@@ -14,6 +15,9 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     provideAnimationsAsync(),
     provideHttpClient(),
-    provideTranslateService()
+    provideTranslateService(),
+    provideLottieOptions({
+      player: () => import('lottie-web/build/player/lottie')
+    })
   ]
 };
