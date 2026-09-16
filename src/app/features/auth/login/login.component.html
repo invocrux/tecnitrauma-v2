@@ -1,7 +1,7 @@
-<div class="login-card">
+Ôªø<div class="login-card">
   <header class="card-header">
     <h2>Bienvenido de Nuevo</h2>
-    <p>Inicia sesiÛn para gestionar tus equipos</p>
+    <p>Inicia sesi√≥n para gestionar tus equipos</p>
   </header>
 
   @if (errorMessage()) {
@@ -12,7 +12,7 @@
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
     <div class="form-field">
-      <label for="email">Correo ElectrÛnico</label>
+      <label for="email">Correo Electr√≥nico</label>
       <input 
         id="email" 
         type="email" 
@@ -20,17 +20,17 @@
         placeholder="name@tecnitrauma.com"
         [class.error]="form.get('email')?.invalid && form.get('email')?.touched" />
       @if (form.get('email')?.invalid && form.get('email')?.touched) {
-        <span class="field-error">Ingrese un correo electrÛnico v·lido</span>
+        <span class="field-error">Ingrese un correo electr√≥nico v√°lido</span>
       }
     </div>
 
     <div class="form-field">
-      <label for="password">ContraseÒa</label>
+      <label for="password">Contrase√±a</label>
       <input 
         id="password" 
         type="password" 
         formControlName="password" 
-        placeholder="ïïïïïïïï"
+        placeholder="‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢"
         [class.error]="form.get('password')?.invalid && form.get('password')?.touched" />
       @if (form.get('password')?.invalid && form.get('password')?.touched) {
         <span class="field-error">Este campo es obligatorio</span>
@@ -45,7 +45,7 @@
         <span class="spinner"></span>
         Verificando...
       } @else {
-        Iniciar SesiÛn
+        Iniciar Sesi√≥n
       }
     </button>
   </form>
