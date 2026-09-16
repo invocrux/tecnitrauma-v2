@@ -1,0 +1,193 @@
+<h2>Reporte de Mantenimiento — Diseño UI</h2>
+<p class="subtitle">Mockup del módulo. Selecciona una opción para ver más detalles.</p>
+
+<div class="cards">
+  <div class="card" data-choice="opcion-a" onclick="toggleSelect(this)">
+    <div class="mockup">
+      <div class="mockup-header">Opción A: Diseño en tarjeta única</div>
+      <div class="mockup-body">
+        <div style="background:#EFF6FF;padding:1.5rem;border-radius:0.75rem;border:1px solid #BFDBFE">
+          <h4 style="margin:0 0 1rem 0;color:#1E40AF;font-size:1rem;font-weight:600;">📋 Reporte de Mantenimiento</h4>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div>
+              <label style="font-size:0.75rem;color:#64748B;display:block;margin-bottom:0.25rem">Equipo</label>
+              <div style="background:#fff;padding:0.5rem;border-radius:0.375rem;border:1px solid #E2E8F0;font-size:0.875rem">Bisturí eléctrico Valleylab</div>
+            </div>
+            <div>
+              <label style="font-size:0.75rem;color:#64748B;display:block;margin-bottom:0.25rem">Tipo</label>
+              <div style="background:#fff;padding:0.5rem;border-radius:0.375rem;border:1px solid #E2E8F0;font-size:0.875rem">Preventivo</div>
+            </div>
+            <div>
+              <label style="font-size:0.75rem;color:#64748B;display:block;margin-bottom:0.25rem">Fecha</label>
+              <div style="background:#fff;padding:0.5rem;border-radius:0.375rem;border:1px solid #E2E8F0;font-size:0.875rem">15/09/2026</div>
+            </div>
+            <div>
+              <label style="font-size:0.75rem;color:#64748B;display:block;margin-bottom:0.25rem">Técnico</label>
+              <div style="background:#fff;padding:0.5rem;border-radius:0.375rem;border:1px solid #E2E8F0;font-size:0.875rem">Carlos Mendoza</div>
+            </div>
+          </div>
+          
+          <div style="margin-bottom:1rem">
+            <label style="font-size:0.75rem;color:#64748B;display:block;margin-bottom:0.25rem">Descripción del trabajo</label>
+            <div style="background:#fff;padding:0.75rem;border-radius:0.375rem;border:1px solid #E2E8F0;font-size:0.875rem;min-height:80px">Revisión y limpieza de componentes internos, calibración de potencia, reemplazo de fusibles...</div>
+          </div>
+          
+          <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+            <button class="mock-button" style="background:#E2E8F0;color:#374151;padding:0.5rem 1rem;border-radius:0.375rem;font-size:0.875rem;border:none">Cancelar</button>
+            <button class="mock-button" style="background:#2563EB;color:#fff;padding:0.5rem 1rem;border-radius:0.375rem;font-size:0.875rem;border:none">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Tarjeta única</h3>
+      <p>Todo en una sola vista, diseño limpio con campos en grid 2 columnas.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="opcion-b" onclick="toggleSelect(this)">
+    <div class="mockup">
+      <div class="mockup-header">Opción B: Pasos/wizard</div>
+      <div class="mockup-body">
+        <div style="background:#F8FAFC;padding:1.5rem;border-radius:0.75rem;border:1px solid #E2E8F0">
+          <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem">
+            <div style="flex:1;height:4px;background:#2563EB;border-radius:2px"></div>
+            <div style="flex:1;height:4px;background:#2563EB;border-radius:2px"></div>
+            <div style="flex:1;height:4px;background:#E2E8F0;border-radius:2px"></div>
+          </div>
+          <div style="display:flex;gap:1rem;margin-bottom:1rem">
+            <div style="flex:1">
+              <span style="font-size:0.6875rem;color:#2563EB;font-weight:600;text-transform:uppercase">Paso 1</span>
+              <h4 style="margin:0;font-size:0.875rem">Equipo</h4>
+            </div>
+            <div style="flex:1">
+              <span style="font-size:0.6875rem;color:#2563EB;font-weight:600;text-transform:uppercase">Paso 2</span>
+              <h4 style="margin:0;font-size:0.875rem">Trabajo</h4>
+            </div>
+            <div style="flex:1;opacity:0.4">
+              <span style="font-size:0.6875rem;color:#64748B;font-weight:600;text-transform:uppercase">Paso 3</span>
+              <h4 style="margin:0;font-size:0.875rem">Firma</h4>
+            </div>
+          </div>
+          
+          <div style="background:#fff;padding:1rem;border-radius:0.5rem;border:1px solid #E2E8F0;margin-bottom:1rem">
+            <label style="font-size:0.75rem;color:#64748B;display:block;margin-bottom:0.25rem">Equipo</label>
+            <input class="mock-input" style="width:100%;box-sizing:border-box" value="Bisturí eléctrico Valleylab">
+          </div>
+          
+          <div style="display:flex;gap:1rem;margin-bottom:1rem">
+            <div style="flex:1;background:#fff;padding:0.75rem;border-radius:0.5rem;border:1px solid #E2E8F0">
+              <label style="font-size:0.75rem;color:#64748B;display:block;margin-bottom:0.25rem">Tipo</label>
+              <div style="font-size:0.875rem">Preventivo</div>
+            </div>
+            <div style="flex:1;background:#fff;padding:0.75rem;border-radius:0.5rem;border:1px solid #E2E8F0">
+              <label style="font-size:0.75rem;color:#64748B;display:block;margin-bottom:0.25rem">Fecha</label>
+              <div style="font-size:0.875rem">15/09/2026</div>
+            </div>
+          </div>
+          
+          <div style="display:flex;justify-content:space-between">
+            <button class="mock-button" style="background:#fff;color:#374151;padding:0.5rem 1rem;border-radius:0.375rem;font-size:0.875rem;border:1px solid #E2E8F0">← Anterior</button>
+            <button class="mock-button" style="background:#2563EB;color:#fff;padding:0.5rem 1rem;border-radius:0.375rem;font-size:0.875rem;border:none">Siguiente →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Wizard de 3 pasos</h3>
+      <p>Flujo guiado: Equipo → Trabajo realizado → Confirmación/Firma.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="opcion-c" onclick="toggleSelect(this)">
+    <div class="mockup">
+      <div class="mockup-header">Opción C: Lista + detalle lateral</div>
+      <div class="mockup-body">
+        <div style="display:flex;gap:1rem;background:#F8FAFC;padding:1.5rem;border-radius:0.75rem;border:1px solid #E2E8F0;box-sizing:border-box">
+          <div style="width:180px;background:#fff;border-radius:0.5rem;border:1px solid #E2E8F0;overflow:hidden">
+            <div style="padding:0.75rem;border-bottom:1px solid #E2E8F0;background:#EFF6FF">
+              <span style="font-size:0.75rem;color:#2563EB;font-weight:600">Lista de reportes</span>
+            </div>
+            <div style="padding:0.5rem 0.75rem;border-bottom:1px solid #E2E8F0;background:#2563EB">
+              <div style="font-size:0.75rem;color:#fff;font-weight:500">Bisturí Valleylab</div>
+              <div style="font-size:0.6875rem;color:#BFDBFE">15/09/2026</div>
+            </div>
+            <div style="padding:0.5rem 0.75rem;border-bottom:1px solid #E2E8F0">
+              <div style="font-size:0.75rem;color:#374151;font-weight:500">Monitor VS8</div>
+              <div style="font-size:0.6875rem;color:#64748B">12/09/2026</div>
+            </div>
+            <div style="padding:0.5rem 0.75rem">
+              <div style="font-size:0.75rem;color:#374151;font-weight:500">Bomba de infusión</div>
+              <div style="font-size:0.6875rem;color:#64748B">10/09/2026</div>
+            </div>
+          </div>
+          
+          <div style="flex:1;background:#fff;padding:1.25rem;border-radius:0.5rem;border:1px solid #E2E8F0">
+            <h4 style="margin:0 0 1rem 0;color:#1E40AF;font-size:1rem">Reporte de Mantenimiento</h4>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:1rem">
+              <div>
+                <label style="font-size:0.6875rem;color:#64748B">Equipo</label>
+                <div style="font-size:0.8125rem;font-weight:500">Bisturí Valleylab</div>
+              </div>
+              <div>
+                <label style="font-size:0.6875rem;color:#64748B">Tipo</label>
+                <div style="font-size:0.8125rem;font-weight:500">Preventivo</div>
+              </div>
+              <div>
+                <label style="font-size:0.6875rem;color:#64748B">Fecha</label>
+                <div style="font-size:0.8125rem;font-weight:500">15/09/2026</div>
+              </div>
+            </div>
+            
+            <div style="margin-bottom:0.75rem">
+              <label style="font-size:0.6875rem;color:#64748B">Descripción</label>
+              <div style="font-size:0.8125rem;background:#F8FAFC;padding:0.5rem;border-radius:0.25rem">Revisión y limpieza de componentes internos...</div>
+            </div>
+            
+            <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem">
+              <button style="background:#fff;color:#374151;padding:0.375rem 0.75rem;border-radius:0.375rem;font-size:0.75rem;border:1px solid #E2E8F0">Editar</button>
+              <button style="background:#2563EB;color:#fff;padding:0.375rem 0.75rem;border-radius:0.375rem;font-size:0.75rem;border:none">Imprimir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Master-detail</h3>
+      <p>Lista de reportes a la izquierda, detalle seleccionado a la derecha.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:2rem">
+  <h3>Paleta de colores médicos</h3>
+  <div style="display:flex;gap:1rem;margin-top:0.75rem">
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:#2563EB;border-radius:0.5rem;border:1px solid #1D4ED8"></div>
+      <span style="font-size:0.6875rem;color:#64748B;display:block;margin-top:0.25rem">Azul primario</span>
+      <code style="font-size:0.625rem;color:#94A3B8">#2563EB</code>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:#EFF6FF;border-radius:0.5rem;border:1px solid #BFDBFE"></div>
+      <span style="font-size:0.6875rem;color:#64748B;display:block;margin-top:0.25rem">Panel bg</span>
+      <code style="font-size:0.625rem;color:#94A3B8">#EFF6FF</code>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:#10B981;border-radius:0.5rem;border:1px solid #059669"></div>
+      <span style="font-size:0.6875rem;color:#64748B;display:block;margin-top:0.25rem">Éxito</span>
+      <code style="font-size:0.625rem;color:#94A3B8">#10B981</code>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:#F59E0B;border-radius:0.5rem;border:1px solid #D97706"></div>
+      <span style="font-size:0.6875rem;color:#64748B;display:block;margin-top:0.25rem">Advertencia</span>
+      <code style="font-size:0.625rem;color:#94A3B8">#F59E0B</code>
+    </div>
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;background:#EF4444;border-radius:0.5rem;border:1px solid #DC2626"></div>
+      <span style="font-size:0.6875rem;color:#64748B;display:block;margin-top:0.25rem">Error</span>
+      <code style="font-size:0.625rem;color:#94A3B8">#EF4444</code>
+    </div>
+  </div>
+</div>

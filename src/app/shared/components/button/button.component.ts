@@ -36,6 +36,8 @@ import { Component, input, output } from '@angular/core';
     .secondary:hover:not(:disabled) { background: #cbd5e1; }
     .danger { background: #ef4444; color: #fff; }
     .danger:hover:not(:disabled) { background: #dc2626; }
+    .tertiary { background: transparent; color: #2563eb; border: 1px solid #2563eb; }
+    .tertiary:hover:not(:disabled) { background: #eff6ff; }
     .spinner {
       width: 14px; height: 14px;
       border: 2px solid currentColor;
@@ -47,7 +49,7 @@ import { Component, input, output } from '@angular/core';
   `]
 })
 export class ButtonComponent {
-  variant = input<'primary' | 'secondary' | 'danger'>('primary');
+  variant = input<'primary' | 'secondary' | 'danger' | 'tertiary'>('primary');
   type = input<'button' | 'submit'>('button');
   disabled = input(false);
   loading = input(false);

@@ -16,7 +16,8 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/components/main-layout/main-layout.component').then(m => m.MainLayoutComponent),
     canActivate: [authGuard],
     children: [
-      { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) }
+      { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
+      { path: 'mantenimiento', loadComponent: () => import('./features/mantenimiento/pages/mantenimiento/mantenimiento.component').then(m => m.MantenimientoComponent) }
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

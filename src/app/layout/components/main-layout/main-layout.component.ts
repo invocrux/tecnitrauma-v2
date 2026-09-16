@@ -1,23 +1,25 @@
 import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { SidebarComponent, NavItem } from '../sidebar/sidebar.component';
+import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastContainerComponent } from '../../../shared/components/toast-container/toast-container.component';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterOutlet, SidebarComponent, HeaderComponent],
+  imports: [RouterOutlet, SidebarComponent, HeaderComponent, ToastContainerComponent],
   template: `
     <div class="layout">
       <app-sidebar 
         [isOpen]="sidebarOpen()"
         [isMobile]="isMobile()"
-        [navItems]="navItems"
+        [isCollapsed]="sidebarCollapsed()"
         (toggle)="toggleSidebar()"
+        (collapseChange)="toggleSidebarCollapse()"
         (logout)="logout()">
       </app-sidebar>
 
-      <div class="main-content" [class.sidebar-open]="sidebarOpen()">
+      <div class="main-content" [class.sidebar-open]="sidebarOpen()" [class.sidebar-collapsed]="sidebarCollapsed()">
         <app-header
           [title]="pageTitle()"
           [userName]="userEmail()"
@@ -29,9 +31,10 @@ import { AuthService } from '../../../core/services/auth.service';
         </main>
       </div>
 
-      @if (isMobile() && sidebarOpen()) {
+        @if (isMobile() && sidebarOpen()) {
         <div class="overlay" (click)="toggleSidebar()"></div>
       }
+      <app-toast-container></app-toast-container>
     </div>
   `,
   styles: [`
@@ -47,7 +50,10 @@ import { AuthService } from '../../../core/services/auth.service';
 
     @media (min-width: 1024px) {
       .main-content.sidebar-open {
-        margin-left: 260px;
+        margin-left: 280px;
+      }
+      .main-content.sidebar-collapsed {
+        margin-left: 72px;
       }
     }
 
@@ -67,15 +73,10 @@ export class MainLayoutComponent {
   private auth = inject(AuthService);
 
   sidebarOpen = signal(true);
+  sidebarCollapsed = signal(false);
   pageTitle = signal('Dashboard');
   isMobile = signal(false);
   userEmail = signal('');
-
-  navItems: NavItem[] = [
-    { labelKey: 'nav.home', route: '/dashboard', icon: 'lucideHome' },
-    { labelKey: 'nav.users', route: '/users', icon: 'lucideUsers' },
-    { labelKey: 'nav.settings', route: '/settings', icon: 'lucideSettings' },
-  ];
 
   constructor() {
     this.checkMobile();
@@ -91,6 +92,10 @@ export class MainLayoutComponent {
 
   toggleSidebar(): void {
     this.sidebarOpen.update(v => !v);
+  }
+
+  toggleSidebarCollapse(): void {
+    this.sidebarCollapsed.update(v => !v);
   }
 
   async logout(): Promise<void> {
