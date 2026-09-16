@@ -4,8 +4,8 @@ import { ToastService } from '../../../core/services/toast.service';
 import type {
   MantenimientoReporte,
   MantenimientoForm,
-  Proveedor,
-  Instrumental,
+  Marca,
+  Equipo,
   Usuario
 } from '../utils/interface';
 
@@ -16,42 +16,42 @@ export class MantenimientoService {
 
   readonly isLoading = signal(false);
   readonly reportes = signal<MantenimientoReporte[]>([]);
-  readonly proveedores = signal<Proveedor[]>([]);
-  readonly instrumentales = signal<Instrumental[]>([]);
+  readonly marcas = signal<Marca[]>([]);
+  readonly equipos = signal<Equipo[]>([]);
   readonly usuarios = signal<Usuario[]>([]);
   readonly numRemision = signal('');
   readonly numSerial = signal('');
 
-  async loadProveedores(): Promise<void> {
+  async loadMarcas(): Promise<void> {
     const { data, error } = await this.supabase.getClient()
-      .from('proveedores')
-      .select('id, nombre, contacto')
+      .from('marcas')
+      .select('id, nombre')
       .order('nombre');
 
     if (error) {
-      this.toast.error('Error cargando proveedores');
+      this.toast.error('Error cargando marcas');
       return;
     }
-    this.proveedores.set(data || []);
+    this.marcas.set(data || []);
   }
 
-  async loadInstrumentales(): Promise<void> {
+  async loadEquipos(): Promise<void> {
     const { data, error } = await this.supabase.getClient()
-      .from('sets')
+      .from('equipos')
       .select('id, nombre, serial')
       .order('nombre');
 
     if (error) {
-      this.toast.error('Error cargando instrumentales');
+      this.toast.error('Error cargando equipos');
       return;
     }
-    this.instrumentales.set(data || []);
+    this.equipos.set(data || []);
   }
 
   async loadUsuarios(): Promise<void> {
     const { data, error } = await this.supabase.getClient()
-      .from('usuarios')
-      .select('id, email, nombre')
+      .from('app_users')
+      .select('id, email, full_name')
       .order('email');
 
     if (error) {
@@ -63,8 +63,8 @@ export class MantenimientoService {
 
   async loadOptions(): Promise<void> {
     await Promise.all([
-      this.loadProveedores(),
-      this.loadInstrumentales(),
+      this.loadMarcas(),
+      this.loadEquipos(),
       this.loadUsuarios()
     ]);
   }
@@ -98,8 +98,8 @@ export class MantenimientoService {
     const reporte: Partial<MantenimientoReporte> = {
       tipo: form.tipo,
       num_remision: form.num_remision,
-      proveedor_id: form.proveedor_id,
-      set_instrumental_id: form.set_instrumental_id,
+      marca_id: form.marca_id,
+      equipo_id: form.equipo_id,
       serial: form.serial,
       pieza: form.pieza,
       referencia: form.referencia,

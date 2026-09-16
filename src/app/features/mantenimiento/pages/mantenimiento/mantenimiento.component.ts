@@ -79,20 +79,20 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
 
               <div class="form-field">
                 <label for="proveedor">Proveedor</label>
-                <select id="proveedor" [(ngModel)]="form.proveedor_id" name="proveedor_id">
+                <select id="proveedor" [(ngModel)]="form.marca_id" name="marca_id">
                   <option [ngValue]="null">Seleccionar...</option>
-                  @for (prov of service.proveedores(); track prov.id) {
-                    <option [value]="prov.id">{{ prov.nombre }}</option>
+                  @for (marca of service.marcas(); track marca.id) {
+                    <option [value]="marca.id">{{ marca.nombre }}</option>
                   }
                 </select>
               </div>
 
               <div class="form-field">
-                <label for="setInstrumental">Set / Instrumental</label>
-                <select id="setInstrumental" [(ngModel)]="form.set_instrumental_id" name="set_instrumental_id">
+                <label for="equipo">Equipo</label>
+                <select id="equipo" [(ngModel)]="form.equipo_id" name="equipo_id">
                   <option [ngValue]="null">Seleccionar...</option>
-                  @for (inst of service.instrumentales(); track inst.id) {
-                    <option [value]="inst.id">{{ inst.nombre }}</option>
+                  @for (equipo of service.equipos(); track equipo.id) {
+                    <option [value]="equipo.id">{{ equipo.nombre }}</option>
                   }
                 </select>
               </div>
@@ -548,8 +548,8 @@ export class MantenimientoComponent implements OnInit {
     return {
       tipo: null,
       num_remision: this.service.numRemision(),
-      proveedor_id: null,
-      set_instrumental_id: null,
+      marca_id: null,
+      equipo_id: null,
       serial: this.service.numSerial(),
       pieza: '',
       referencia: '',
@@ -581,8 +581,8 @@ export class MantenimientoComponent implements OnInit {
     this.form = {
       tipo: reporte.tipo,
       num_remision: reporte.num_remision,
-      proveedor_id: reporte.proveedor_id,
-      set_instrumental_id: reporte.set_instrumental_id,
+      marca_id: reporte.marca_id,
+      equipo_id: reporte.equipo_id,
       serial: reporte.serial,
       pieza: reporte.pieza,
       referencia: reporte.referencia,

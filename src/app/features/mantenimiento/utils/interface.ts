@@ -5,8 +5,8 @@ export interface MantenimientoReporte {
   id?: string;
   tipo: TipoMantenimiento | null;
   num_remision: string;
-  proveedor_id: string | null;
-  set_instrumental_id: string | null;
+  marca_id: number | null;
+  equipo_id: number | null;
   serial: string;
   pieza: string;
   referencia: string;
@@ -21,14 +21,13 @@ export interface MantenimientoReporte {
   created_by?: string;
 }
 
-export interface Proveedor {
-  id: string;
+export interface Marca {
+  id: number;
   nombre: string;
-  contacto?: string;
 }
 
-export interface Instrumental {
-  id: string;
+export interface Equipo {
+  id: number;
   nombre: string;
   serial?: string;
 }
@@ -36,14 +35,14 @@ export interface Instrumental {
 export interface Usuario {
   id: string;
   email: string;
-  nombre?: string;
+  full_name?: string;
 }
 
 export interface MantenimientoForm {
   tipo: TipoMantenimiento | null;
   num_remision: string;
-  proveedor_id: string | null;
-  set_instrumental_id: string | null;
+  marca_id: number | null;
+  equipo_id: number | null;
   serial: string;
   pieza: string;
   referencia: string;
