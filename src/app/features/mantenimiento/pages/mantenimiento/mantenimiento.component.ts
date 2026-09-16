@@ -50,7 +50,10 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
         <div class="card-header">
           <div class="header-title">
             <ng-icon name="lucideWrench" class="header-icon"></ng-icon>
-            <h1>Reporte de Mantenimiento</h1>
+            <div class="header-text">
+              <h1>Reporte Mantenimiento</h1>
+              <span class="header-subtitle">Instrumental Quirúrgico</span>
+            </div>
           </div>
         </div>
 
@@ -375,11 +378,23 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
       color: #2563eb;
     }
 
+    .header-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
     h1 {
       margin: 0;
       font-size: 1.25rem;
       font-weight: 600;
       color: #1e40af;
+    }
+
+    .header-subtitle {
+      font-size: 0.8125rem;
+      font-weight: 400;
+      color: #64748b;
     }
 
     .card-body {
