@@ -15,9 +15,12 @@ export class MantenimientoService {
   private toast = inject(ToastService);
 
   readonly isLoading = signal(false);
+  readonly reportes = signal<MantenimientoReporte[]>([]);
   readonly proveedores = signal<Proveedor[]>([]);
   readonly instrumentales = signal<Instrumental[]>([]);
   readonly usuarios = signal<Usuario[]>([]);
+  readonly numRemision = signal('');
+  readonly numSerial = signal('');
 
   async loadProveedores(): Promise<void> {
     const { data, error } = await this.supabase.getClient()
@@ -66,6 +69,28 @@ export class MantenimientoService {
     ]);
   }
 
+  async loadReportes(): Promise<void> {
+    const { data, error } = await this.supabase.getClient()
+      .from('mantenimiento_reportes')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      this.toast.error('Error cargando reportes');
+      return;
+    }
+    this.reportes.set(data || []);
+  }
+
+  async loadNumeros(): Promise<void> {
+    const client = this.supabase.getClient();
+    const { data: remisionData } = await client.rpc('generar_remision');
+    this.numRemision.set(remisionData || 'REM-001');
+
+    const { data: serialData } = await client.rpc('generar_serial');
+    this.numSerial.set(serialData || 'SN-00000');
+  }
+
   async guardar(form: MantenimientoForm): Promise<boolean> {
     this.isLoading.set(true);
 
@@ -99,6 +124,27 @@ export class MantenimientoService {
     }
 
     this.toast.success('Reporte guardado correctamente');
+    await this.loadReportes();
+    await this.loadNumeros();
+    return true;
+  }
+
+  async eliminar(id: string): Promise<boolean> {
+    this.isLoading.set(true);
+    const { error } = await this.supabase.getClient()
+      .from('mantenimiento_reportes')
+      .delete()
+      .eq('id', id);
+
+    this.isLoading.set(false);
+
+    if (error) {
+      this.toast.error('Error al eliminar: ' + error.message);
+      return false;
+    }
+
+    this.toast.success('Reporte eliminado');
+    await this.loadReportes();
     return true;
   }
 
