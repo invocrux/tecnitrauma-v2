@@ -1,49 +1,32 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TitleCasePipe } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { lucideWrench, lucidePrinter, lucideSend, lucideSave, lucidePlus, lucideTrash2, lucideSearch } from '@ng-icons/lucide';
+import { lucideWrench, lucidePrinter, lucideSend, lucideSave, lucideTrash2 } from '@ng-icons/lucide';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ConfirmDeleteModalComponent } from '../../../../shared/components/confirm-delete-modal/confirm-delete-modal.component';
+import { ReportListPanelComponent, type ReportListItem } from '../../../../shared/components/report-list-panel/report-list-panel.component';
 import { MantenimientoService } from '../../services/mantenimiento.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interface';
 
 @Component({
   selector: 'app-mantenimiento',
-  imports: [FormsModule, NgIconComponent, ButtonComponent, ConfirmDeleteModalComponent],
-  providers: [provideIcons({ lucideWrench, lucidePrinter, lucideSend, lucideSave, lucidePlus, lucideTrash2, lucideSearch })],
+  imports: [FormsModule, NgIconComponent, ButtonComponent, ConfirmDeleteModalComponent, TitleCasePipe, ReportListPanelComponent],
+  providers: [provideIcons({ lucideWrench, lucidePrinter, lucideSend, lucideSave, lucideTrash2 })],
   template: `
     <div class="page-container">
       <!-- List Panel -->
-      <aside class="list-panel">
-        <div class="list-toolbar">
-          <button class="btn-nuevo" (click)="onNuevo()">
-            <ng-icon name="lucidePlus"></ng-icon>
-            Nuevo
-          </button>
-        </div>
-        <div class="search-box">
-          <ng-icon name="lucideSearch" class="search-icon"></ng-icon>
-          <input type="text" placeholder="Buscar..." />
-        </div>
-        <div class="report-list">
-          @for (reporte of service.reportes(); track reporte.id) {
-            <div 
-              class="report-card"
-              [class.selected]="selectedReporte()?.id === reporte.id"
-              (click)="onSelect(reporte)">
-              <div class="report-card-header">
-                <span class="card-remision">{{ reporte.num_remision }}</span>
-                <span class="badge" [class]="'badge-' + reporte.estado">{{ reporte.estado }}</span>
-              </div>
-              <div class="report-card-content">
-                <span class="card-tipo">{{ getTipoLabel(reporte.tipo) }}</span>
-                <span class="card-fecha">{{ reporte.fecha }}</span>
-              </div>
-            </div>
-          }
-        </div>
-      </aside>
+      <app-report-list-panel
+        [items]="reportesList()"
+        [selectedId]="selectedReporte()?.id ?? null"
+        searchPlaceholder="Buscar por N° remisión o serial..."
+        [searchTerm]="searchTerm()"
+        [isLoading]="service.isLoading()"
+        (onNewClicked)="onNuevo()"
+        (onItemClicked)="onSelect($event)"
+        (onSearchChanged)="onSearch($event)">
+      </app-report-list-panel>
 
       <!-- Form Panel -->
       <div class="page-card">
@@ -60,7 +43,7 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
         <form class="card-body" (ngSubmit)="onSubmit()">
           <!-- Sección 1: Identificación -->
           <section class="form-section">
-            <h2 class="section-title">Identificación</h2>
+            <h2 class="section-title">INFORMACIÓN GENERAL</h2>
             <div class="form-grid">
               <div class="form-field">
                 <label for="tipo">Tipo de mantenimiento</label>
@@ -122,7 +105,7 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
               </div>
 
               <div class="form-field">
-                <label for="fecha">Fecha de mantenimiento</label>
+                <label for="fecha">Fecha de Solicitud para Mantenimiento</label>
                 <input id="fecha" type="date" [(ngModel)]="form.fecha" name="fecha" />
               </div>
 
@@ -131,7 +114,7 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
                 <select id="realizadoPor" [(ngModel)]="form.realizado_por" name="realizado_por">
                   <option [ngValue]="null">Seleccionar...</option>
                   @for (user of service.usuarios(); track user.id) {
-                    <option [value]="user.id">{{ user.email }}</option>
+                    <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
                   }
                 </select>
               </div>
@@ -209,138 +192,6 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
 
     .page-container {
       display: contents;
-    }
-
-    /* List Panel */
-    .list-panel {
-      width: 320px;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .list-toolbar {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .btn-nuevo {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: #2563eb;
-      color: #fff;
-      border: none;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    .btn-nuevo:hover {
-      background: #1d4ed8;
-    }
-
-    .btn-nuevo ng-icon {
-      width: 16px;
-      height: 16px;
-    }
-
-    .search-box {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .search-box .search-icon {
-      position: absolute;
-      left: 0.75rem;
-      width: 16px;
-      height: 16px;
-      color: #94a3b8;
-    }
-
-    .search-box input {
-      width: 100%;
-      padding: 0.5rem 0.75rem 0.5rem 2.5rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
-    }
-
-    .search-box input:focus {
-      outline: none;
-      border-color: #2563eb;
-    }
-
-    .report-list {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .report-card {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.5rem;
-      padding: 0.75rem;
-      cursor: pointer;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-
-    .report-card:hover {
-      border-color: #2563eb;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .report-card.selected {
-      border-color: #2563eb;
-      background: #eff6ff;
-    }
-
-    .report-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .card-remision {
-      font-weight: 600;
-      font-size: 0.9375rem;
-      color: #1e293b;
-    }
-
-    .badge {
-      font-size: 0.6875rem;
-      font-weight: 500;
-      padding: 0.125rem 0.5rem;
-      border-radius: 9999px;
-      text-transform: capitalize;
-    }
-
-    .badge-borrador { background: #e2e8f0; color: #475569; }
-    .badge-enviado { background: #dbeafe; color: #1d4ed8; }
-    .badge-completado { background: #dcfce7; color: #15803d; }
-
-    .report-card-content {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .card-tipo {
-      font-size: 0.8125rem;
-      color: #64748b;
-    }
-
-    .card-fecha {
-      font-size: 0.8125rem;
-      color: #64748b;
     }
 
     /* Original styles below */
@@ -556,6 +407,18 @@ export class MantenimientoComponent implements OnInit {
   errors = signal<Record<string, string>>({});
   selectedReporte = signal<MantenimientoReporte | null>(null);
   showDeleteModal = signal(false);
+  searchTerm = signal('');
+
+  reportesList = computed<ReportListItem[]>(() => {
+    return this.service.reportes().map(r => ({
+      id: r.id!,
+      num_remision: r.num_remision,
+      serial: r.serial,
+      estado: r.estado,
+      tipo: r.tipo,
+      fecha: r.fecha
+    }));
+  });
 
   isEditing = computed(() => this.selectedReporte() !== null);
 
@@ -582,16 +445,9 @@ export class MantenimientoComponent implements OnInit {
     this.service.loadNumeros();
   }
 
-  getTipoLabel(tipo: string | null): string {
-    const labels: Record<string, string> = {
-      correctivo: 'Correctivo',
-      predictivo: 'Predictivo',
-      preventivo: 'Preventivo'
-    };
-    return tipo ? (labels[tipo] || tipo) : '';
-  }
-
-  onSelect(reporte: MantenimientoReporte): void {
+  onSelect(item: ReportListItem): void {
+    const reporte = this.service.reportes().find(r => r.id === item.id);
+    if (!reporte) return;
     this.selectedReporte.set(reporte);
     this.form = {
       tipo: reporte.tipo,
@@ -607,6 +463,10 @@ export class MantenimientoComponent implements OnInit {
       descripcion: reporte.descripcion,
       observaciones: reporte.observaciones
     };
+  }
+
+  onSearch(term: string): void {
+    this.searchTerm.set(term);
   }
 
   onNuevo(): void {
