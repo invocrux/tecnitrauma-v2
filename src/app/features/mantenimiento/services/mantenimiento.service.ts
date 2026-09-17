@@ -105,6 +105,7 @@ export class MantenimientoService {
       referencia: form.referencia,
       fecha: form.fecha,
       realizado_por: form.realizado_por,
+      supervisado_por: form.supervisado_por,
       motivo: form.motivo,
       descripcion: form.descripcion,
       observaciones: form.observaciones,

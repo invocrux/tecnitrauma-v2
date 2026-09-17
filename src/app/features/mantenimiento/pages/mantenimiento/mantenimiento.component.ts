@@ -109,14 +109,26 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
                 <input id="fecha" type="date" [(ngModel)]="form.fecha" name="fecha" />
               </div>
 
-              <div class="form-field full-width">
-                <label for="realizadoPor">Realizado por</label>
-                <select id="realizadoPor" [(ngModel)]="form.realizado_por" name="realizado_por">
-                  <option [ngValue]="null">Seleccionar...</option>
-                  @for (user of service.usuarios(); track user.id) {
-                    <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
-                  }
-                </select>
+              <div class="form-row-2">
+                <div class="form-field">
+                  <label for="realizadoPor">Realizado por</label>
+                  <select id="realizadoPor" [(ngModel)]="form.realizado_por" name="realizado_por">
+                    <option [ngValue]="null">Seleccionar...</option>
+                    @for (user of service.usuarios(); track user.id) {
+                      <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="supervisadoPor">Supervisado por</label>
+                  <select id="supervisadoPor" [(ngModel)]="form.supervisado_por" name="supervisado_por">
+                    <option [ngValue]="null">Seleccionar...</option>
+                    @for (user of service.usuarios(); track user.id) {
+                      <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
+                    }
+                  </select>
+                </div>
               </div>
             </div>
           </section>
@@ -276,6 +288,13 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
       gap: 1rem;
     }
 
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      grid-column: 1 / -1;
+    }
+
     .form-field {
       display: flex;
       flex-direction: column;
@@ -433,6 +452,7 @@ export class MantenimientoComponent implements OnInit {
       referencia: '',
       fecha: this.service.getTodayDate(),
       realizado_por: null,
+      supervisado_por: null,
       motivo: '',
       descripcion: '',
       observaciones: ''
@@ -459,6 +479,7 @@ export class MantenimientoComponent implements OnInit {
       referencia: reporte.referencia,
       fecha: reporte.fecha,
       realizado_por: reporte.realizado_por,
+      supervisado_por: reporte.supervisado_por,
       motivo: reporte.motivo,
       descripcion: reporte.descripcion,
       observaciones: reporte.observaciones
