@@ -1,19 +1,20 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TitleCasePipe } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { lucideWrench, lucidePrinter, lucideSend, lucideSave, lucideTrash2 } from '@ng-icons/lucide';
+import { lucideWrench, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideSearch } from '@ng-icons/lucide';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ConfirmDeleteModalComponent } from '../../../../shared/components/confirm-delete-modal/confirm-delete-modal.component';
 import { ReportListPanelComponent, type ReportListItem } from '../../../../shared/components/report-list-panel/report-list-panel.component';
+import { SearchModalComponent, type SearchItem } from '../../../../shared/components/search-modal/search-modal.component';
 import { MantenimientoService } from '../../services/mantenimiento.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interface';
+import type { MantenimientoReporte } from '../../utils/interface';
 
 @Component({
   selector: 'app-mantenimiento',
-  imports: [FormsModule, NgIconComponent, ButtonComponent, ConfirmDeleteModalComponent, TitleCasePipe, ReportListPanelComponent],
-  providers: [provideIcons({ lucideWrench, lucidePrinter, lucideSend, lucideSave, lucideTrash2 })],
+  imports: [ReactiveFormsModule, NgIconComponent, ButtonComponent, ConfirmDeleteModalComponent, TitleCasePipe, ReportListPanelComponent, SearchModalComponent],
+  providers: [provideIcons({ lucideWrench, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideSearch })],
   template: `
     <div class="page-container">
       <!-- List Panel -->
@@ -40,52 +41,67 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
           </div>
         </div>
 
-        <form class="card-body" (ngSubmit)="onSubmit()">
+        <form class="card-body" [formGroup]="form" (ngSubmit)="onSubmit()">
           <!-- Sección 1: Identificación -->
           <section class="form-section">
             <h2 class="section-title">INFORMACIÓN GENERAL</h2>
             <div class="form-grid">
               <div class="form-field">
                 <label for="tipo">Tipo de mantenimiento</label>
-                <select id="tipo" [(ngModel)]="form.tipo" name="tipo">
+                <select id="tipo" formControlName="tipo">
                   <option [ngValue]="null">Seleccionar...</option>
                   <option value="correctivo">Correctivo</option>
                   <option value="predictivo">Predictivo</option>
                   <option value="preventivo">Preventivo</option>
                 </select>
-                @if (errors()['tipo']) {
-                  <span class="field-error">{{ errors()['tipo'] }}</span>
+                @if (form.get('tipo')?.invalid && form.get('tipo')?.touched) {
+                  <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
 
               <div class="form-field">
                 <label for="numRemision">N° de remisión</label>
-                <input id="numRemision" type="text" [(ngModel)]="form.num_remision" name="num_remision" />
+                <input id="numRemision" type="text" formControlName="num_remision" />
+                @if (form.get('num_remision')?.invalid && form.get('num_remision')?.touched) {
+                  <span class="field-error">Este campo es obligatorio</span>
+                }
               </div>
 
               <div class="form-field">
                 <label for="proveedor">Proveedor</label>
-                <select id="proveedor" [(ngModel)]="form.marca_id" name="marca_id">
+                <select id="proveedor" formControlName="marca_id">
                   <option [ngValue]="null">Seleccionar...</option>
                   @for (marca of service.marcas(); track marca.id) {
                     <option [value]="marca.id">{{ marca.nombre }}</option>
                   }
                 </select>
-              </div>
-
-              <div class="form-field">
-                <label for="equipo">Equipo</label>
-                <select id="equipo" [(ngModel)]="form.equipo_id" name="equipo_id">
-                  <option [ngValue]="null">Seleccionar...</option>
-                  @for (equipo of service.equipos(); track equipo.id) {
-                    <option [value]="equipo.id">{{ equipo.nombre }}</option>
-                  }
-                </select>
+                @if (form.get('marca_id')?.invalid && form.get('marca_id')?.touched) {
+                  <span class="field-error">Este campo es obligatorio</span>
+                }
               </div>
 
               <div class="form-field">
                 <label for="serial">Serial</label>
-                <input id="serial" type="text" [(ngModel)]="form.serial" name="serial" />
+                <div class="search-input-wrapper">
+                  <input
+                    type="text"
+                    [value]="selectedSetDisplay()"
+                    placeholder="Seleccionar serial..."
+                    readonly
+                    class="search-field-input"
+                  />
+                  <button type="button" class="search-btn" (click)="openSerialModal()">
+                    <ng-icon name="lucideSearch" />
+                  </button>
+                </div>
+                @if (form.get('serial')?.invalid && form.get('serial')?.touched) {
+                  <span class="field-error">Este campo es obligatorio</span>
+                }
+              </div>
+
+              <div class="form-field">
+                <label for="equipo">Equipo</label>
+                <input id="equipo" type="text" [value]="selectedSetNombre()" readonly class="readonly-input" />
               </div>
             </div>
           </section>
@@ -96,38 +112,64 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
             <div class="form-grid">
               <div class="form-field">
                 <label for="pieza">Pieza para mantenimiento</label>
-                <input id="pieza" type="text" [(ngModel)]="form.pieza" name="pieza" placeholder="Placa base" />
+                <div class="search-input-wrapper">
+                  <input
+                    type="text"
+                    [value]="selectedPiezaNombre()"
+                    placeholder="Seleccionar pieza..."
+                    readonly
+                    class="search-field-input"
+                  />
+                  <button type="button" class="search-btn" (click)="openPiezaModal()" [disabled]="!form.get('serial')?.value">
+                    <ng-icon name="lucideSearch" />
+                  </button>
+                </div>
+                @if (form.get('pieza')?.invalid && form.get('pieza')?.touched) {
+                  <span class="field-error">Este campo es obligatorio</span>
+                }
               </div>
 
               <div class="form-field">
                 <label for="referencia">Referencia</label>
-                <input id="referencia" type="text" [(ngModel)]="form.referencia" name="referencia" placeholder="REF-001" />
+                <input id="referencia" type="text" [value]="selectedPiezaReferencia()" readonly class="readonly-input" />
+                @if (form.get('referencia')?.invalid && form.get('referencia')?.touched) {
+                  <span class="field-error">Este campo es obligatorio</span>
+                }
               </div>
 
               <div class="form-field">
                 <label for="fecha">Fecha de Solicitud para Mantenimiento</label>
-                <input id="fecha" type="date" [(ngModel)]="form.fecha" name="fecha" />
+                <input id="fecha" type="date" formControlName="fecha" />
+                @if (form.get('fecha')?.invalid && form.get('fecha')?.touched) {
+                  <span class="field-error">Este campo es obligatorio</span>
+                }
               </div>
 
               <div class="form-row-2">
                 <div class="form-field">
                   <label for="realizadoPor">Realizado por</label>
-                  <select id="realizadoPor" [(ngModel)]="form.realizado_por" name="realizado_por">
+                  <select id="realizadoPor" formControlName="realizado_por">
                     <option [ngValue]="null">Seleccionar...</option>
                     @for (user of service.usuarios(); track user.id) {
                       <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
                     }
                   </select>
+                  @if (form.get('realizado_por')?.invalid && form.get('realizado_por')?.touched) {
+                    <span class="field-error">Este campo es obligatorio</span>
+                  }
                 </div>
 
                 <div class="form-field">
                   <label for="supervisadoPor">Supervisado por</label>
-                  <select id="supervisadoPor" [(ngModel)]="form.supervisado_por" name="supervisado_por">
+                  <select id="supervisadoPor" formControlName="supervisado_por">
                     <option [ngValue]="null">Seleccionar...</option>
                     @for (user of service.usuarios(); track user.id) {
                       <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
                     }
                   </select>
+                  @if (form.get('supervisado_por')?.invalid && form.get('supervisado_por')?.touched) {
+                    <span class="field-error">Este campo es obligatorio</span>
+                  }
                 </div>
               </div>
             </div>
@@ -139,20 +181,26 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
             <div class="form-grid">
               <div class="form-field full-width">
                 <label for="motivo">Motivo de solicitud</label>
-                <textarea id="motivo" [(ngModel)]="form.motivo" name="motivo" rows="3" placeholder="Describa el motivo de la solicitud..."></textarea>
+                <textarea id="motivo" formControlName="motivo" rows="3" placeholder="Describa el motivo de la solicitud..."></textarea>
+                @if (form.get('motivo')?.invalid && form.get('motivo')?.touched) {
+                  <span class="field-error">Este campo es obligatorio</span>
+                }
               </div>
 
               <div class="form-field full-width">
                 <label for="descripcion">Descripción del mantenimiento</label>
-                <textarea id="descripcion" [(ngModel)]="form.descripcion" name="descripcion" rows="4" placeholder="Detalle el trabajo realizado..."></textarea>
-                @if (errors()['descripcion']) {
-                  <span class="field-error">{{ errors()['descripcion'] }}</span>
+                <textarea id="descripcion" formControlName="descripcion" rows="4" placeholder="Detalle el trabajo realizado..."></textarea>
+                @if (form.get('descripcion')?.invalid && form.get('descripcion')?.touched) {
+                  <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
 
               <div class="form-field full-width">
                 <label for="observaciones">Observaciones</label>
-                <textarea id="observaciones" [(ngModel)]="form.observaciones" name="observaciones" rows="2" placeholder="Observaciones adicionales..."></textarea>
+                <textarea id="observaciones" formControlName="observaciones" rows="2" placeholder="Observaciones adicionales..."></textarea>
+                @if (form.get('observaciones')?.invalid && form.get('observaciones')?.touched) {
+                  <span class="field-error">Este campo es obligatorio</span>
+                }
               </div>
             </div>
           </section>
@@ -166,7 +214,7 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
               </app-button>
             }
             <div class="actions-right">
-              <app-button variant="primary" type="submit" [loading]="service.isLoading()" [disabled]="service.isLoading()">
+              <app-button variant="primary" type="submit" [loading]="service.isLoading()" [disabled]="form.invalid">
                 <ng-icon name="lucideSave"></ng-icon>
                 Guardar
               </app-button>
@@ -190,6 +238,26 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
       (confirmed)="onConfirmDelete()"
       (cancelled)="showDeleteModal.set(false)">
     </app-confirm-delete-modal>
+
+    <app-search-modal
+      [title]="'Buscar Serial'"
+      [placeholder]="'Buscar por serial...'"
+      [items]="serialSearchItems()"
+      [selectedId]="form.get('serial')?.value"
+      [isOpen]="showSerialModal()"
+      (itemSelected)="onSerialSelected($event)"
+      (closed)="showSerialModal.set(false)">
+    </app-search-modal>
+
+    <app-search-modal
+      [title]="'Buscar Pieza'"
+      [placeholder]="'Buscar por nombre...'"
+      [items]="piezaSearchItems()"
+      [selectedId]="form.get('pieza')?.value"
+      [isOpen]="showPiezaModal()"
+      (itemSelected)="onPiezaSelected($event)"
+      (closed)="showPiezaModal.set(false)">
+    </app-search-modal>
   `,
   styles: [`
     :host {
@@ -303,6 +371,58 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
 
     .form-field.full-width {
       grid-column: 1 / -1;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .search-field-input {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.375rem;
+      background: #fff;
+      color: #374151;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .search-field-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .readonly-input {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.375rem;
+      background: #f9fafb;
+      color: #6b7280;
+      font-family: inherit;
+    }
+
+    .search-btn {
+      padding: 0.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.375rem;
+      background: #fff;
+      color: #6b7280;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .search-btn:hover {
+      background: #f3f4f6;
+      color: #374151;
     }
 
     label {
@@ -421,12 +541,15 @@ import type { MantenimientoForm, MantenimientoReporte } from '../../utils/interf
 export class MantenimientoComponent implements OnInit {
   service = inject(MantenimientoService);
   private toast = inject(ToastService);
+  private fb = inject(FormBuilder);
 
-  form: MantenimientoForm = this.emptyForm();
-  errors = signal<Record<string, string>>({});
+  form!: FormGroup;
   selectedReporte = signal<MantenimientoReporte | null>(null);
   showDeleteModal = signal(false);
+  showSerialModal = signal(false);
+  showPiezaModal = signal(false);
   searchTerm = signal('');
+  private formChangeTrigger = signal(0);
 
   reportesList = computed<ReportListItem[]>(() => {
     return this.service.reportes().map(r => ({
@@ -441,39 +564,87 @@ export class MantenimientoComponent implements OnInit {
 
   isEditing = computed(() => this.selectedReporte() !== null);
 
-  private emptyForm(): MantenimientoForm {
-    return {
-      tipo: null,
-      num_remision: '',
-      marca_id: null,
-      equipo_id: null,
-      serial: '',
-      pieza: '',
-      referencia: '',
-      fecha: this.service.getTodayDate(),
-      realizado_por: null,
-      supervisado_por: null,
-      motivo: '',
-      descripcion: '',
-      observaciones: ''
-    };
+  serialSearchItems = computed<SearchItem[]>(() => {
+    this.formChangeTrigger();
+    return this.service.setsInstrumentales().map(s => ({
+      id: s.serial,
+      label: `${s.serial} - ${s.nombre}`,
+      sublabel: s.serial
+    }));
+  });
+
+  selectedSetDisplay = computed(() => {
+    this.formChangeTrigger();
+    const serial = this.form.get('serial')?.value;
+    if (!serial) return '';
+    const set = this.service.setsInstrumentales().find(s => s.serial === serial);
+    return set ? `${set.serial} - ${set.nombre}` : '';
+  });
+
+  selectedSetNombre = computed(() => {
+    this.formChangeTrigger();
+    const serial = this.form.get('serial')?.value;
+    if (!serial) return '';
+    const set = this.service.setsInstrumentales().find(s => s.serial === serial);
+    return set?.nombre || '';
+  });
+
+  piezaSearchItems = computed<SearchItem[]>(() => {
+    this.formChangeTrigger();
+    return this.service.setPiezas().map(p => ({
+      id: p.id,
+      label: p.nombre,
+      sublabel: `Ref: ${p.referencia}`
+    }));
+  });
+
+  selectedPiezaNombre = computed(() => {
+    this.formChangeTrigger();
+    if (!this.form.get('pieza')?.value) return '';
+    const pieza = this.service.setPiezas().find(p => p.id === parseInt(this.form.get('pieza')?.value, 10));
+    return pieza?.nombre || '';
+  });
+
+  selectedPiezaReferencia = computed(() => {
+    this.formChangeTrigger();
+    if (!this.form.get('pieza')?.value) return '';
+    const pieza = this.service.setPiezas().find(p => p.id === parseInt(this.form.get('pieza')?.value, 10));
+    return pieza?.referencia || '';
+  });
+
+  private createForm(): FormGroup {
+    return this.fb.group({
+      tipo: [null, Validators.required],
+      num_remision: ['', Validators.required],
+      marca_id: [null, Validators.required],
+      serial: ['', Validators.required],
+      pieza: ['', Validators.required],
+      referencia: ['', Validators.required],
+      fecha: [this.service.getTodayDate(), Validators.required],
+      realizado_por: [null, Validators.required],
+      supervisado_por: [null, Validators.required],
+      motivo: ['', Validators.required],
+      descripcion: ['', Validators.required],
+      observaciones: ['', Validators.required]
+    });
   }
 
   ngOnInit(): void {
+    this.form = this.createForm();
     this.service.loadOptions();
     this.service.loadReportes();
     this.service.loadNumeros();
+    this.service.loadSetPiezas();
   }
 
   onSelect(item: ReportListItem): void {
     const reporte = this.service.reportes().find(r => r.id === item.id);
     if (!reporte) return;
     this.selectedReporte.set(reporte);
-    this.form = {
+    this.form.patchValue({
       tipo: reporte.tipo,
       num_remision: reporte.num_remision,
       marca_id: reporte.marca_id,
-      equipo_id: reporte.equipo_id,
       serial: reporte.serial,
       pieza: reporte.pieza,
       referencia: reporte.referencia,
@@ -483,17 +654,50 @@ export class MantenimientoComponent implements OnInit {
       motivo: reporte.motivo,
       descripcion: reporte.descripcion,
       observaciones: reporte.observaciones
-    };
+    });
+    this.form.markAllAsTouched();
+    this.formChangeTrigger.update(v => v + 1);
+    if (reporte.serial) {
+      const set = this.service.setsInstrumentales().find(s => s.serial === reporte.serial);
+      if (set) {
+        this.service.loadSetPiezas(set.id);
+      }
+    }
   }
 
   onSearch(term: string): void {
     this.searchTerm.set(term);
   }
 
+  openSerialModal(): void {
+    this.showSerialModal.set(true);
+  }
+
+  onSerialSelected(item: SearchItem): void {
+    this.form.patchValue({ serial: item.id as string, pieza: '', referencia: '' });
+    this.formChangeTrigger.update(v => v + 1);
+    const set = this.service.setsInstrumentales().find(s => s.serial === item.id);
+    if (set) {
+      this.service.loadSetPiezas(set.id);
+    }
+    this.showSerialModal.set(false);
+  }
+
+  openPiezaModal(): void {
+    this.showPiezaModal.set(true);
+  }
+
+  onPiezaSelected(item: SearchItem): void {
+    const pieza = this.service.setPiezas().find(p => p.id === item.id);
+    this.form.patchValue({ pieza: String(item.id), referencia: pieza?.referencia || '' });
+    this.formChangeTrigger.update(v => v + 1);
+    this.showPiezaModal.set(false);
+  }
+
   onNuevo(): void {
     this.selectedReporte.set(null);
-    this.form = this.emptyForm();
-    this.errors.set({});
+    this.form = this.createForm();
+    this.formChangeTrigger.update(v => v + 1);
   }
 
   onDelete(): void {
@@ -513,27 +717,35 @@ export class MantenimientoComponent implements OnInit {
     }
   }
 
-  validate(): boolean {
-    const errs: Record<string, string> = {};
-
-    if (!this.form.tipo) {
-      errs['tipo'] = 'El tipo de mantenimiento es requerido';
-    }
-    if (!this.form.descripcion.trim()) {
-      errs['descripcion'] = 'La descripción es requerida';
-    }
-
-    this.errors.set(errs);
-    return Object.keys(errs).length === 0;
-  }
-
   async onSubmit(): Promise<void> {
-    if (!this.validate()) {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       this.toast.error('Por favor complete los campos requeridos');
       return;
     }
 
-    const success = await this.service.guardar(this.form);
+    if (this.form.get('realizado_por')?.value && this.form.get('supervisado_por')?.value &&
+        this.form.get('realizado_por')?.value === this.form.get('supervisado_por')?.value) {
+      this.toast.error('Supervisado por no puede ser igual a Realizado por');
+      return;
+    }
+
+    const formValue = this.form.value;
+    const success = await this.service.guardar({
+      tipo: formValue.tipo,
+      num_remision: formValue.num_remision,
+      marca_id: formValue.marca_id,
+      equipo_id: null,
+      serial: formValue.serial,
+      pieza: formValue.pieza,
+      referencia: formValue.referencia,
+      fecha: formValue.fecha,
+      realizado_por: formValue.realizado_por,
+      supervisado_por: formValue.supervisado_por,
+      motivo: formValue.motivo,
+      descripcion: formValue.descripcion,
+      observaciones: formValue.observaciones
+    });
 
     if (success) {
       this.resetForm();
@@ -541,8 +753,7 @@ export class MantenimientoComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.form = this.emptyForm();
-    this.errors.set({});
+    this.form = this.createForm();
     this.selectedReporte.set(null);
   }
 

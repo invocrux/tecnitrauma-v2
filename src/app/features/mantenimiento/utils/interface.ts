@@ -39,6 +39,19 @@ export interface Usuario {
   full_name?: string;
 }
 
+export interface SetInstrumental {
+  id: number;
+  serial: string;
+  nombre: string;
+}
+
+export interface SetPieza {
+  id: number;
+  set_id: number;
+  nombre: string;
+  referencia: string;
+}
+
 export interface MantenimientoForm {
   tipo: TipoMantenimiento | null;
   num_remision: string;

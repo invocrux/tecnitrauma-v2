@@ -6,7 +6,9 @@ import type {
   MantenimientoForm,
   Marca,
   Equipo,
-  Usuario
+  Usuario,
+  SetInstrumental,
+  SetPieza
 } from '../utils/interface';
 
 @Injectable({ providedIn: 'root' })
@@ -19,6 +21,8 @@ export class MantenimientoService {
   readonly marcas = signal<Marca[]>([]);
   readonly equipos = signal<Equipo[]>([]);
   readonly usuarios = signal<Usuario[]>([]);
+  readonly setsInstrumentales = signal<SetInstrumental[]>([]);
+  readonly setPiezas = signal<SetPieza[]>([]);
   readonly numRemision = signal('');
   readonly numSerial = signal('');
 
@@ -38,7 +42,7 @@ export class MantenimientoService {
   async loadEquipos(): Promise<void> {
     const { data, error } = await this.supabase.getClient()
       .from('equipos')
-      .select('id, nombre, serial')
+      .select('id, nombre')
       .order('nombre');
 
     if (error) {
@@ -65,8 +69,41 @@ export class MantenimientoService {
     await Promise.all([
       this.loadMarcas(),
       this.loadEquipos(),
-      this.loadUsuarios()
+      this.loadUsuarios(),
+      this.loadSetsInstrumentales()
     ]);
+  }
+
+  async loadSetsInstrumentales(): Promise<void> {
+    const { data, error } = await this.supabase.getClient()
+      .from('sets_instrumentales')
+      .select('id, serial, nombre')
+      .order('serial');
+
+    if (error) {
+      this.toast.error('Error cargando sets instrumentales');
+      return;
+    }
+    this.setsInstrumentales.set(data || []);
+  }
+
+  async loadSetPiezas(setId?: number): Promise<void> {
+    let query = this.supabase.getClient()
+      .from('set_piezas')
+      .select('id, set_id, nombre, referencia')
+      .order('nombre');
+
+    if (setId) {
+      query = query.eq('set_id', setId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      this.toast.error('Error cargando piezas');
+      return;
+    }
+    this.setPiezas.set(data || []);
   }
 
   async loadReportes(): Promise<void> {
