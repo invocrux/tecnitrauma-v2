@@ -67,3 +67,11 @@ export interface MantenimientoForm {
   descripcion: string;
   observaciones: string;
 }
+
+export interface UserSignature {
+  id: string;
+  user_id: string;
+  firma_url: string;
+  created_at: string;
+  updated_at: string;
+}

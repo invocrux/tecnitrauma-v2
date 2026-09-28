@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TitleCasePipe } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -8,6 +9,7 @@ import { ConfirmDeleteModalComponent } from '../../../../shared/components/confi
 import { ReportListPanelComponent, type ReportListItem } from '../../../../shared/components/report-list-panel/report-list-panel.component';
 import { SearchModalComponent, type SearchItem } from '../../../../shared/components/search-modal/search-modal.component';
 import { MantenimientoService } from '../../services/mantenimiento.service';
+import { ProfileService } from '../../../profile/services/profile.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import type { MantenimientoReporte } from '../../utils/interface';
 
@@ -36,7 +38,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
             <ng-icon name="lucideWrench" class="header-icon"></ng-icon>
             <div class="header-text">
               <h1>Reporte Mantenimiento</h1>
-              <span class="header-subtitle">Instrumental Quirúrgico</span>
+              <span class="header-subtitle">{{ tipoLabel() }}</span>
             </div>
           </div>
         </div>
@@ -148,12 +150,22 @@ import type { MantenimientoReporte } from '../../utils/interface';
               <div class="form-row-2">
                 <div class="form-field">
                   <label for="realizadoPor">Realizado por</label>
-                  <select id="realizadoPor" formControlName="realizado_por">
-                    <option [ngValue]="null">Seleccionar...</option>
-                    @for (user of service.usuarios(); track user.id) {
-                      <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
-                    }
-                  </select>
+                  @if (isTecnitrauma()) {
+                    <select id="realizadoPor" formControlName="realizado_por">
+                      <option [ngValue]="null">Seleccionar...</option>
+                      @for (user of service.usuarios(); track user.id) {
+                        <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <input
+                      id="realizadoPor"
+                      type="text"
+                      [value]="externalProviderName()"
+                      readonly
+                      class="readonly-input"
+                    />
+                  }
                   @if (form.get('realizado_por')?.invalid && form.get('realizado_por')?.touched) {
                     <span class="field-error">Este campo es obligatorio</span>
                   }
@@ -201,6 +213,39 @@ import type { MantenimientoReporte } from '../../utils/interface';
                 @if (form.get('observaciones')?.invalid && form.get('observaciones')?.touched) {
                   <span class="field-error">Este campo es obligatorio</span>
                 }
+              </div>
+            </div>
+          </section>
+
+          <!-- Sección Firmas -->
+          <section class="form-section">
+            <h2 class="section-title">Firmas</h2>
+            <div class="signatures-row">
+              <div class="signature-box">
+                <label>Supervisado por</label>
+                <div class="signature-display">
+                  @if (supervisorSignatureUrl()) {
+                    <img [src]="supervisorSignatureUrl()" alt="Firma supervisor" />
+                  } @else {
+                    <div class="signature-placeholder">
+                      <span>Sin firma</span>
+                    </div>
+                  }
+                  <span class="signature-name">{{ supervisorName() }}</span>
+                </div>
+              </div>
+              <div class="signature-box">
+                <label>Realizado por</label>
+                <div class="signature-display">
+                  @if (realizadoSignatureUrl()) {
+                    <img [src]="realizadoSignatureUrl()" alt="Firma realizado" />
+                  } @else {
+                    <div class="signature-placeholder">
+                      <span>Sin firma</span>
+                    </div>
+                  }
+                  <span class="signature-name">{{ realizadoName() }}</span>
+                </div>
               </div>
             </div>
           </section>
@@ -491,6 +536,52 @@ import type { MantenimientoReporte } from '../../utils/interface';
       height: 16px;
     }
 
+    .signatures-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .signature-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .signature-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      border: 1px dashed #e2e8f0;
+      border-radius: 0.5rem;
+      background: #f9fafb;
+      min-height: 100px;
+      justify-content: center;
+    }
+
+    .signature-display img {
+      max-width: 200px;
+      max-height: 80px;
+      object-fit: contain;
+    }
+
+    .signature-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 80px;
+      color: #9ca3af;
+      font-size: 0.875rem;
+    }
+
+    .signature-name {
+      font-size: 0.875rem;
+      color: #374151;
+      font-weight: 500;
+    }
+
     @media (max-width: 768px) {
       :host {
         height: auto;
@@ -540,8 +631,10 @@ import type { MantenimientoReporte } from '../../utils/interface';
 })
 export class MantenimientoComponent implements OnInit {
   service = inject(MantenimientoService);
+  private profileService = inject(ProfileService);
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
+  private destroyRef = inject(DestroyRef);
 
   form!: FormGroup;
   selectedReporte = signal<MantenimientoReporte | null>(null);
@@ -550,6 +643,11 @@ export class MantenimientoComponent implements OnInit {
   showPiezaModal = signal(false);
   searchTerm = signal('');
   private formChangeTrigger = signal(0);
+
+  supervisorSignatureUrl = signal('');
+  realizadoSignatureUrl = signal('');
+  supervisorName = signal('');
+  realizadoName = signal('');
 
   reportesList = computed<ReportListItem[]>(() => {
     return this.service.reportes().map(r => ({
@@ -612,6 +710,28 @@ export class MantenimientoComponent implements OnInit {
     return pieza?.referencia || '';
   });
 
+  tipoLabel = computed(() => {
+    return 'Predictivo / Preventivo / Correctivo';
+  });
+
+  isTecnitrauma = computed(() => {
+    this.formChangeTrigger();
+    const marcaId = Number(this.form.get('marca_id')?.value);
+    if (!marcaId) return true;
+    const marca = this.service.marcas().find(m => m.id === marcaId);
+    return marca?.nombre?.toLowerCase().includes('tecnitrauma') ?? true;
+  });
+
+  externalProviderName = computed(() => {
+    this.formChangeTrigger();
+    const marcaId = Number(this.form.get('marca_id')?.value);
+    if (!marcaId) return '';
+    const marca = this.service.marcas().find(m => m.id === marcaId);
+    if (!marca) return '';
+    if (marca.nombre.toLowerCase().includes('tecnitrauma')) return '';
+    return marca.nombre;
+  });
+
   private createForm(): FormGroup {
     return this.fb.group({
       tipo: [null, Validators.required],
@@ -629,12 +749,63 @@ export class MantenimientoComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
+ngOnInit(): void {
     this.form = this.createForm();
+    this.form.get('marca_id')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncRealizadoPorWithMarca());
+    this.form.get('realizado_por')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(userId => this.loadSignature('realizado', userId));
+    this.form.get('supervisado_por')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(userId => this.loadSignature('supervisor', userId));
     this.service.loadOptions();
     this.service.loadReportes();
     this.service.loadNumeros();
     this.service.loadSetPiezas();
+  }
+
+  private async loadSignature(type: 'realizado' | 'supervisor', userId: string | null): Promise<void> {
+    if (!userId) {
+      if (type === 'realizado') {
+        this.realizadoSignatureUrl.set('');
+        this.realizadoName.set('');
+      } else {
+        this.supervisorSignatureUrl.set('');
+        this.supervisorName.set('');
+      }
+      return;
+    }
+
+    const user = this.service.usuarios().find(u => u.id === userId);
+    const name = user?.full_name || 'Usuario';
+
+    const signature = await this.profileService.getUserSignature(userId);
+    const url = signature?.firma_url || '';
+
+    if (type === 'realizado') {
+      this.realizadoSignatureUrl.set(url);
+      this.realizadoName.set(name);
+    } else {
+      this.supervisorSignatureUrl.set(url);
+      this.supervisorName.set(name);
+    }
+  }
+
+  private syncRealizadoPorWithMarca(): void {
+    const marcaId = Number(this.form.get('marca_id')?.value);
+    const marca = this.service.marcas().find(item => item.id === marcaId);
+    const realizadoPor = this.form.get('realizado_por');
+
+    if (marca && !marca.nombre.toLowerCase().includes('tecnitrauma')) {
+      realizadoPor?.reset(null, { emitEvent: false });
+      realizadoPor?.disable({ emitEvent: false });
+    } else {
+      realizadoPor?.enable({ emitEvent: false });
+    }
+
+    this.formChangeTrigger.update(value => value + 1);
   }
 
   onSelect(item: ReportListItem): void {
@@ -663,6 +834,8 @@ export class MantenimientoComponent implements OnInit {
         this.service.loadSetPiezas(set.id);
       }
     }
+    this.loadSignature('realizado', reporte.realizado_por);
+    this.loadSignature('supervisor', reporte.supervisado_por);
   }
 
   onSearch(term: string): void {
@@ -698,6 +871,10 @@ export class MantenimientoComponent implements OnInit {
     this.selectedReporte.set(null);
     this.form = this.createForm();
     this.formChangeTrigger.update(v => v + 1);
+    this.supervisorSignatureUrl.set('');
+    this.realizadoSignatureUrl.set('');
+    this.supervisorName.set('');
+    this.realizadoName.set('');
   }
 
   onDelete(): void {
