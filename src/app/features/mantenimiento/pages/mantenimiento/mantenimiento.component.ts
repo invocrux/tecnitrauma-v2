@@ -228,17 +228,6 @@ import type { MantenimientoReporte } from '../../utils/interface';
             <h2 class="section-title">Firmas</h2>
             <div class="signatures-row">
               <div class="signature-box">
-                <label>Supervisado por</label>
-                <div class="signature-display">
-                  @if (supervisorSignatureUrl()) {
-                    <img [src]="supervisorSignatureUrl()" alt="Firma supervisor" />
-                  } @else {
-                    <app-signature-upload></app-signature-upload>
-                  }
-                  <span class="signature-name">{{ supervisorName() }}</span>
-                </div>
-              </div>
-              <div class="signature-box">
                 <label>Realizado por</label>
                 <div class="signature-display">
                   @if (realizadoSignatureUrl()) {
@@ -247,6 +236,17 @@ import type { MantenimientoReporte } from '../../utils/interface';
                     <app-signature-upload></app-signature-upload>
                   }
                   <span class="signature-name">{{ realizadoName() }}</span>
+                </div>
+              </div>
+              <div class="signature-box">
+                <label>Supervisado por</label>
+                <div class="signature-display">
+                  @if (supervisorSignatureUrl()) {
+                    <img [src]="supervisorSignatureUrl()" alt="Firma supervisor" />
+                  } @else {
+                    <app-signature-upload></app-signature-upload>
+                  }
+                  <span class="signature-name">{{ supervisorName() }}</span>
                 </div>
               </div>
             </div>
