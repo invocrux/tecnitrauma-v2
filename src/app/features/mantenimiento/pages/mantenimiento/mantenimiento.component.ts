@@ -261,7 +261,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
               </app-button>
             }
             <div class="actions-right">
-              <app-button variant="primary" type="submit" [loading]="service.isLoading()" [disabled]="form.invalid">
+              <app-button variant="primary" type="submit" [loading]="service.isLoading()">
                 <ng-icon name="lucideSave"></ng-icon>
                 Guardar
               </app-button>
