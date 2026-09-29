@@ -18,6 +18,7 @@ import {
   lucideChevronRight
 } from '@ng-icons/lucide';
 import { AuthService } from '../../../core/services/auth.service';
+import { BUILD_VERSION } from '../../../core/config/build-version';
 
 export interface NavItem {
   label: string;
@@ -343,7 +344,7 @@ export interface NavItem {
 })
 export class SidebarComponent {
   auth = inject(AuthService);
-  readonly commitVersion = 'fa6fa18';
+  readonly commitVersion = BUILD_VERSION;
   
   isOpen = input(true);
   isMobile = input(false);
