@@ -157,7 +157,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
                 <div class="form-field">
                   <label for="realizadoPor">Realizado por</label>
                   @if (isTecnitrauma()) {
-                    <select id="realizadoPor" formControlName="realizado_por" (blur)="form.get('realizado_por')?.markAsTouched()">
+                    <select id="realizadoPor" formControlName="realizado_por" (change)="onSignatureUserChange('realizado', $any($event.target).value)" (blur)="form.get('realizado_por')?.markAsTouched()">
                       <option [ngValue]="null">Seleccionar...</option>
                       @for (user of service.usuarios(); track user.id) {
                         <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
@@ -179,7 +179,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
 
                 <div class="form-field">
                   <label for="supervisadoPor">Supervisado por</label>
-                  <select id="supervisadoPor" formControlName="supervisado_por" (blur)="form.get('supervisado_por')?.markAsTouched()">
+                  <select id="supervisadoPor" formControlName="supervisado_por" (change)="onSignatureUserChange('supervisor', $any($event.target).value)" (blur)="form.get('supervisado_por')?.markAsTouched()">
                     <option [ngValue]="null">Seleccionar...</option>
                     @for (user of service.usuarios(); track user.id) {
                       <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
@@ -1058,6 +1058,10 @@ ngOnInit(): void {
     }
   }
 
+  onSignatureUserChange(type: 'realizado' | 'supervisor', userId: string): void {
+    void this.loadSignature(type, userId || null);
+  }
+
   private syncRealizadoPorWithMarca(): void {
     const marcaId = Number(this.form.get('marca_id')?.value);
     const marca = this.service.marcas().find(item => item.id === marcaId);
@@ -1135,7 +1139,23 @@ ngOnInit(): void {
 
   onNuevo(): void {
     this.selectedReporte.set(null);
-    this.form = this.createForm();
+    this.form.get('realizado_por')?.enable({ emitEvent: false });
+    this.form.reset({
+      tipo: null,
+      num_remision: '',
+      marca_id: null,
+      serial: '',
+      pieza: '',
+      referencia: '',
+      fecha: this.service.getTodayDate(),
+      fecha_mantenimiento: null,
+      realizado_por: null,
+      supervisado_por: null,
+      motivo: '',
+      descripcion: '',
+      observaciones: ''
+    });
+    this.submitted.set(false);
     this.formChangeTrigger.update(v => v + 1);
     this.supervisorSignatureUrl.set('');
     this.realizadoSignatureUrl.set('');
@@ -1195,12 +1215,7 @@ ngOnInit(): void {
   }
 
   resetForm(): void {
-    this.form = this.createForm();
-    this.selectedReporte.set(null);
-    this.supervisorSignatureUrl.set('');
-    this.realizadoSignatureUrl.set('');
-    this.supervisorName.set('');
-    this.realizadoName.set('');
+    this.onNuevo();
   }
 
   onPrint(): void {
