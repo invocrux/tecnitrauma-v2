@@ -107,16 +107,21 @@ export class MantenimientoService {
   }
 
   async loadReportes(): Promise<void> {
+    this.isLoading.set(true);
+
     const { data, error } = await this.supabase.getClient()
       .from('mantenimiento_reportes')
-      .select('*')
+      .select('id, tipo, num_remision, marca_id, equipo_id, serial, pieza, referencia, fecha, fecha_mantenimiento, realizado_por, supervisado_por, motivo, descripcion, observaciones, estado, created_at, updated_at, created_by')
       .order('created_at', { ascending: false });
 
     if (error) {
-      this.toast.error('Error cargando reportes');
+      console.error('Error cargando reportes:', error);
+      this.toast.error('Error cargando reportes: ' + error.message);
+      this.isLoading.set(false);
       return;
     }
     this.reportes.set(data || []);
+    this.isLoading.set(false);
   }
 
   async loadNumeros(): Promise<void> {
