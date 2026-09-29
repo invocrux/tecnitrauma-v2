@@ -96,6 +96,7 @@ export interface NavItem {
           <ng-icon name="lucideLogOut"></ng-icon>
           <span class="nav-label" [class.hidden]="isCollapsed()">Cerrar Sesión</span>
         </button>
+        <div class="app-version" [class.hidden]="isCollapsed()">Commit {{ commitVersion }}</div>
       </div>
     </aside>
   `,
@@ -323,6 +324,18 @@ export interface NavItem {
       color: #FCA5A5; 
     }
 
+    .app-version {
+      padding: 0.5rem 0.75rem 0;
+      color: #64748B;
+      font-size: 0.625rem;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    .app-version.hidden {
+      display: none;
+    }
+
     ng-icon {
       flex-shrink: 0;
     }
@@ -330,6 +343,7 @@ export interface NavItem {
 })
 export class SidebarComponent {
   auth = inject(AuthService);
+  readonly commitVersion = 'fa6fa18';
   
   isOpen = input(true);
   isMobile = input(false);

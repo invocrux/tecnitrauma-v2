@@ -320,7 +320,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
               <img [src]="realizadoSignatureUrl()" alt="Firma de quien realiza" />
             }
           </div>
-          <div><strong>FIRMA:</strong> {{ realizadoPrintName() || ' ' }}</div>
+          <div><strong>NOMBRE Y CARGO:</strong> {{ realizadoPrintName() || ' ' }}</div>
           <div><strong>FECHA:</strong> {{ formatPrintDate(form.get('fecha_mantenimiento')?.value) }}</div>
         </div>
         <div class="print-signature-cell">
@@ -330,7 +330,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
               <img [src]="supervisorSignatureUrl()" alt="Firma del supervisor" />
             }
           </div>
-          <div><strong>FIRMA:</strong> {{ supervisorName() || ' ' }}</div>
+          <div><strong>NOMBRE Y CARGO:</strong> {{ supervisorName() || ' ' }}</div>
           <div><strong>FECHA:</strong> {{ formatPrintDate(form.get('fecha_mantenimiento')?.value) }}</div>
         </div>
       </div>
