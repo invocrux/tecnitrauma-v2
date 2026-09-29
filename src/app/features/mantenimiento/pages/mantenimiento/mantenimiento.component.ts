@@ -1173,7 +1173,7 @@ ngOnInit(): void {
     }
 
     const formValue = this.form.value;
-    const success = await this.service.guardar({
+    await this.service.guardar({
       tipo: formValue.tipo,
       num_remision: formValue.num_remision,
       marca_id: formValue.marca_id,
@@ -1189,10 +1189,7 @@ ngOnInit(): void {
       descripcion: formValue.descripcion,
       observaciones: formValue.observaciones
     });
-
-    if (success) {
-      this.resetForm();
-    }
+    this.resetForm();
   }
 
   resetForm(): void {
