@@ -8,7 +8,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 import { ConfirmDeleteModalComponent } from '../../../../shared/components/confirm-delete-modal/confirm-delete-modal.component';
 import { ReportListPanelComponent, type ReportListItem } from '../../../../shared/components/report-list-panel/report-list-panel.component';
 import { SearchModalComponent, type SearchItem } from '../../../../shared/components/search-modal/search-modal.component';
-import { SignatureUploadComponent } from '../../../profile/components/signature-upload/signature-upload.component';
+
 import { MantenimientoService } from '../../services/mantenimiento.service';
 import { ProfileService } from '../../../profile/services/profile.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -16,7 +16,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
 
 @Component({
   selector: 'app-mantenimiento',
-  imports: [ReactiveFormsModule, NgIconComponent, ButtonComponent, ConfirmDeleteModalComponent, TitleCasePipe, ReportListPanelComponent, SearchModalComponent, SignatureUploadComponent],
+  imports: [ReactiveFormsModule, NgIconComponent, ButtonComponent, ConfirmDeleteModalComponent, TitleCasePipe, ReportListPanelComponent, SearchModalComponent],
   providers: [provideIcons({ lucideWrench, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideSearch })],
   template: `
     <div class="page-container">
