@@ -8,6 +8,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 import { ConfirmDeleteModalComponent } from '../../../../shared/components/confirm-delete-modal/confirm-delete-modal.component';
 import { ReportListPanelComponent, type ReportListItem } from '../../../../shared/components/report-list-panel/report-list-panel.component';
 import { SearchModalComponent, type SearchItem } from '../../../../shared/components/search-modal/search-modal.component';
+import { SignatureUploadComponent } from '../../../profile/components/signature-upload/signature-upload.component';
 import { MantenimientoService } from '../../services/mantenimiento.service';
 import { ProfileService } from '../../../profile/services/profile.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -15,7 +16,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
 
 @Component({
   selector: 'app-mantenimiento',
-  imports: [ReactiveFormsModule, NgIconComponent, ButtonComponent, ConfirmDeleteModalComponent, TitleCasePipe, ReportListPanelComponent, SearchModalComponent],
+  imports: [ReactiveFormsModule, NgIconComponent, ButtonComponent, ConfirmDeleteModalComponent, TitleCasePipe, ReportListPanelComponent, SearchModalComponent, SignatureUploadComponent],
   providers: [provideIcons({ lucideWrench, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideSearch })],
   template: `
     <div class="page-container">
@@ -232,9 +233,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
                   @if (supervisorSignatureUrl()) {
                     <img [src]="supervisorSignatureUrl()" alt="Firma supervisor" />
                   } @else {
-                    <div class="signature-placeholder">
-                      <span>Sin firma</span>
-                    </div>
+                    <app-signature-upload></app-signature-upload>
                   }
                   <span class="signature-name">{{ supervisorName() }}</span>
                 </div>
@@ -245,9 +244,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
                   @if (realizadoSignatureUrl()) {
                     <img [src]="realizadoSignatureUrl()" alt="Firma realizado" />
                   } @else {
-                    <div class="signature-placeholder">
-                      <span>Sin firma</span>
-                    </div>
+                    <app-signature-upload></app-signature-upload>
                   }
                   <span class="signature-name">{{ realizadoName() }}</span>
                 </div>
@@ -281,6 +278,63 @@ import type { MantenimientoReporte } from '../../utils/interface';
         </form>
       </div>
     </div>
+
+    <!-- Plantilla utilizada únicamente al imprimir/guardar como PDF -->
+    <article class="print-report">
+      <header class="print-header">
+        <div class="print-meta">
+          <div><strong>Código:</strong> FR-TT-018-03</div>
+          <div><strong>Versión:</strong> 6</div>
+          <div><strong>Vigencia:</strong> 15/10/2025</div>
+        </div>
+        <div class="print-title">REGISTRO DE MANTENIMIENTO<br>PREVENTIVO / CORRECTIVO</div>
+        <div class="print-brand"><strong>Tecni<span>trauma</span></strong></div>
+      </header>
+
+      <div class="print-section-title">INFORMACIÓN GENERAL</div>
+      <div class="print-grid print-general">
+        <div><strong>FECHA DE SOLICITUD:</strong> {{ formatPrintDate(form.get('fecha')?.value) }}</div>
+        <div><strong>MANTENIMIENTO:</strong> {{ form.get('tipo')?.value | titlecase }}</div>
+        <div><strong>FECHA DE MANTENIMIENTO:</strong> {{ formatPrintDate(form.get('fecha_mantenimiento')?.value) }}</div>
+        <div><strong>PROVEEDOR:</strong> {{ providerPrintName() }}</div>
+        <div><strong>EQUIPO:</strong> {{ selectedSetNombre() || '—' }}</div>
+        <div><strong>PIEZA:</strong> {{ selectedPiezaNombre() || '—' }}</div>
+        <div><strong>REFERENCIA:</strong> {{ selectedPiezaReferencia() || '—' }}</div>
+        <div><strong>No. REMISIÓN:</strong> {{ form.get('num_remision')?.value || '—' }}</div>
+      </div>
+
+      <div class="print-section-title">MOTIVO DE SOLICITUD PARA MANTENIMIENTO</div>
+      <div class="print-text-block">{{ form.get('motivo')?.value || ' ' }}</div>
+
+      <div class="print-section-title">DESCRIPCIÓN DEL MANTENIMIENTO</div>
+      <div class="print-text-block print-description">{{ form.get('descripcion')?.value || ' ' }}</div>
+
+      <div class="print-section-title">OBSERVACIONES</div>
+      <div class="print-text-block print-observations">{{ form.get('observaciones')?.value || ' ' }}</div>
+
+      <div class="print-signatures">
+        <div class="print-signature-cell">
+          <strong>REALIZADO POR:</strong>
+          <div class="print-signature-image">
+            @if (realizadoSignatureUrl()) {
+              <img [src]="realizadoSignatureUrl()" alt="Firma de quien realiza" />
+            }
+          </div>
+          <div><strong>FIRMA:</strong> {{ realizadoPrintName() || ' ' }}</div>
+          <div><strong>FECHA:</strong> {{ formatPrintDate(form.get('fecha_mantenimiento')?.value) }}</div>
+        </div>
+        <div class="print-signature-cell">
+          <strong>SUPERVISADO POR:</strong>
+          <div class="print-signature-image">
+            @if (supervisorSignatureUrl()) {
+              <img [src]="supervisorSignatureUrl()" alt="Firma del supervisor" />
+            }
+          </div>
+          <div><strong>FIRMA:</strong> {{ supervisorName() || ' ' }}</div>
+          <div><strong>FECHA:</strong> {{ formatPrintDate(form.get('fecha_mantenimiento')?.value) }}</div>
+        </div>
+      </div>
+    </article>
 
     <app-confirm-delete-modal
       [open]="showDeleteModal()"
@@ -536,6 +590,179 @@ import type { MantenimientoReporte } from '../../utils/interface';
       gap: 0.5rem;
     }
 
+    .print-report {
+      display: none;
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 10mm;
+      }
+
+      :host {
+        display: block;
+        height: auto;
+        padding: 0;
+        overflow: visible;
+      }
+
+      .page-container,
+      app-confirm-delete-modal,
+      app-search-modal {
+        display: none !important;
+      }
+
+      .print-report {
+        display: block;
+        width: 100%;
+        max-width: 190mm;
+        min-width: 0;
+        margin: 0 auto;
+        overflow: hidden;
+        color: #111827;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 8.5pt;
+        line-height: 1.2;
+        box-sizing: border-box;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .print-header {
+        display: grid;
+        grid-template-columns: 34mm 1fr 42mm;
+        width: 100%;
+        min-width: 0;
+        min-height: 25mm;
+        border: 1.5px solid #111827;
+      }
+
+      .print-meta {
+        display: grid;
+        grid-template-rows: repeat(3, 1fr);
+        border-right: 1.5px solid #111827;
+      }
+
+      .print-meta div {
+        display: flex;
+        align-items: center;
+        padding: 1.5mm;
+        border-bottom: 1px solid #111827;
+      }
+
+      .print-meta div:last-child {
+        border-bottom: 0;
+      }
+
+      .print-title {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2mm;
+        font-size: 13pt;
+        font-weight: 700;
+        border-right: 1.5px solid #111827;
+      }
+
+      .print-brand {
+        display: flex;
+        min-width: 0;
+        overflow: hidden;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #25618b;
+        font-size: 12pt;
+      }
+
+      .print-brand span {
+        color: #4b5563;
+      }
+
+      .print-brand small {
+        margin-top: 1mm;
+        color: #6b7280;
+        font-size: 6pt;
+      }
+
+      .print-section-title {
+        margin-top: 3mm;
+        padding: 1.5mm;
+        border: 1.2px solid #111827;
+        background: #c6d9ee !important;
+        text-align: center;
+        font-weight: 700;
+      }
+
+      .print-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-left: 1.2px solid #111827;
+        border-top: 1.2px solid #111827;
+      }
+
+      .print-grid > div {
+        min-width: 0;
+        min-height: 8mm;
+        padding: 1.5mm;
+        border-right: 1.2px solid #111827;
+        border-bottom: 1.2px solid #111827;
+        overflow-wrap: anywhere;
+      }
+
+      .print-text-block {
+        min-height: 22mm;
+        padding: 2mm;
+        border: 1.2px solid #111827;
+        border-top: 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .print-description {
+        min-height: 32mm;
+      }
+
+      .print-observations {
+        min-height: 18mm;
+      }
+
+      .print-signatures {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin-top: 3mm;
+        border: 1.2px solid #111827;
+      }
+
+      .print-signature-cell {
+        min-height: 39mm;
+        padding: 2mm;
+        border-right: 1.2px solid #111827;
+      }
+
+      .print-signature-cell:last-child {
+        border-right: 0;
+      }
+
+      .print-signature-image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 19mm;
+        margin: 1mm 0;
+        border-bottom: 1px solid #111827;
+      }
+
+      .print-signature-image img {
+        max-width: 48mm;
+        max-height: 16mm;
+        object-fit: contain;
+      }
+    }
+
     ng-icon {
       width: 16px;
       height: 16px;
@@ -736,6 +963,21 @@ export class MantenimientoComponent implements OnInit {
     if (marca.nombre.toLowerCase().includes('tecnitrauma')) return '';
     return marca.nombre;
   });
+
+  providerPrintName(): string {
+    const marcaId = Number(this.form.get('marca_id')?.value);
+    return this.service.marcas().find(marca => marca.id === marcaId)?.nombre || '—';
+  }
+
+  realizadoPrintName(): string {
+    return this.realizadoName() || this.externalProviderName();
+  }
+
+  formatPrintDate(value: string | null | undefined): string {
+    if (!value) return ' ';
+    const [year, month, day] = value.slice(0, 10).split('-');
+    return year && month && day ? `${day}/${month}/${year}` : value;
+  }
 
   private createForm(): FormGroup {
     return this.fb.group({
@@ -943,7 +1185,21 @@ ngOnInit(): void {
   }
 
   onPrint(): void {
+    const previousTitle = document.title;
+    const reportNumber = this.form.get('num_remision')?.value || 'sin-remision';
+    document.title = `Reporte-Mantenimiento-${reportNumber}`;
+    document.body.classList.add('printing-maintenance');
+
+    const cleanupPrintState = () => {
+      document.body.classList.remove('printing-maintenance');
+      document.title = previousTitle;
+    };
+
+    window.addEventListener('afterprint', cleanupPrintState, { once: true });
     window.print();
+    window.setTimeout(() => {
+      cleanupPrintState();
+    }, 1000);
   }
 
   onEnviar(): void {

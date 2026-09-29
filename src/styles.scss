@@ -22,3 +22,40 @@ code, pre {
   --primary-light: #EFF6FF;
   --primary-dark: #1E40AF;
 }
+
+@media print {
+  html,
+  body {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  body.printing-maintenance app-sidebar,
+  body.printing-maintenance app-header {
+    display: none !important;
+  }
+
+  body.printing-maintenance app-main-layout,
+  body.printing-maintenance app-mantenimiento {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.printing-maintenance .main-content,
+  body.printing-maintenance .page-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+}
