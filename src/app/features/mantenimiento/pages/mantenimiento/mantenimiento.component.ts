@@ -234,7 +234,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
                     @if (realizadoSignatureUrl()) {
                       <img [src]="realizadoSignatureUrl()" alt="Firma realizado" />
                     } @else {
-                      <app-signature-upload></app-signature-upload>
+                      <span class="signature-placeholder">Sin firma - Subir desde Perfil</span>
                     }
                     <span class="signature-name">{{ realizadoName() }}</span>
                   </div>
@@ -246,7 +246,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
                   @if (supervisorSignatureUrl()) {
                     <img [src]="supervisorSignatureUrl()" alt="Firma supervisor" />
                   } @else {
-                    <app-signature-upload></app-signature-upload>
+                    <span class="signature-placeholder">Sin firma - Subir desde Perfil</span>
                   }
                   <span class="signature-name">{{ supervisorName() }}</span>
                 </div>
