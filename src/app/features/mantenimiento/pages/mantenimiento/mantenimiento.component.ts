@@ -227,17 +227,19 @@ import type { MantenimientoReporte } from '../../utils/interface';
           <section class="form-section">
             <h2 class="section-title">Firmas</h2>
             <div class="signatures-row">
-              <div class="signature-box">
-                <label>Realizado por</label>
-                <div class="signature-display">
-                  @if (realizadoSignatureUrl()) {
-                    <img [src]="realizadoSignatureUrl()" alt="Firma realizado" />
-                  } @else {
-                    <app-signature-upload></app-signature-upload>
-                  }
-                  <span class="signature-name">{{ realizadoName() }}</span>
+              @if (isTecnitrauma()) {
+                <div class="signature-box">
+                  <label>Realizado por</label>
+                  <div class="signature-display">
+                    @if (realizadoSignatureUrl()) {
+                      <img [src]="realizadoSignatureUrl()" alt="Firma realizado" />
+                    } @else {
+                      <app-signature-upload></app-signature-upload>
+                    }
+                    <span class="signature-name">{{ realizadoName() }}</span>
+                  </div>
                 </div>
-              </div>
+              }
               <div class="signature-box">
                 <label>Supervisado por</label>
                 <div class="signature-display">
@@ -313,16 +315,18 @@ import type { MantenimientoReporte } from '../../utils/interface';
       <div class="print-text-block print-observations">{{ form.get('observaciones')?.value || ' ' }}</div>
 
       <div class="print-signatures">
-        <div class="print-signature-cell">
-          <strong>REALIZADO POR:</strong>
-          <div class="print-signature-image">
-            @if (realizadoSignatureUrl()) {
-              <img [src]="realizadoSignatureUrl()" alt="Firma de quien realiza" />
-            }
+        @if (isTecnitrauma()) {
+          <div class="print-signature-cell">
+            <strong>REALIZADO POR:</strong>
+            <div class="print-signature-image">
+              @if (realizadoSignatureUrl()) {
+                <img [src]="realizadoSignatureUrl()" alt="Firma de quien realiza" />
+              }
+            </div>
+            <div><strong>NOMBRE Y CARGO:</strong> {{ realizadoPrintName() || ' ' }}</div>
+            <div><strong>FECHA:</strong> {{ formatPrintDate(form.get('fecha_mantenimiento')?.value) }}</div>
           </div>
-          <div><strong>NOMBRE Y CARGO:</strong> {{ realizadoPrintName() || ' ' }}</div>
-          <div><strong>FECHA:</strong> {{ formatPrintDate(form.get('fecha_mantenimiento')?.value) }}</div>
-        </div>
+        }
         <div class="print-signature-cell">
           <strong>SUPERVISADO POR:</strong>
           <div class="print-signature-image">
