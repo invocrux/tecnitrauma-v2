@@ -7,40 +7,49 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
   imports: [ButtonComponent],
   template: `
     <div class="signature-upload">
-      <div class="upload-area" (click)="fileInput.click()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
-        <input
-          #fileInput
-          type="file"
-          accept="image/png,image/jpeg,image/jpg"
-          (change)="onFileSelected($event)"
-          hidden
-        />
-        @if (previewUrl()) {
-          <div class="preview">
-            <img [src]="previewUrl()" alt="Vista previa de firma" />
+      @if (hasSignature()) {
+        <div class="signature-registered">
+          <div class="signature-display">
+            <img [src]="currentSignatureUrl()" alt="Tu firma" />
           </div>
-        } @else {
-          <div class="placeholder">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <p>Arrastra una imagen o haz click para seleccionar</p>
-            <span class="hint">PNG o JPG, máximo 2MB</span>
+          <p class="registered-message">Tu firma está registrada</p>
+        </div>
+      } @else {
+        <div class="upload-area" (click)="fileInput.click()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+          <input
+            #fileInput
+            type="file"
+            accept="image/png,image/jpeg,image/jpg"
+            (change)="onFileSelected($event)"
+            hidden
+          />
+          @if (previewUrl()) {
+            <div class="preview">
+              <img [src]="previewUrl()" alt="Vista previa de firma" />
+            </div>
+          } @else {
+            <div class="placeholder">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <p>Arrastra una imagen o haz click para seleccionar</p>
+              <span class="hint">PNG o JPG, máximo 2MB</span>
+            </div>
+          }
+        </div>
+
+        @if (previewUrl()) {
+          <div class="actions">
+            <app-button variant="secondary" type="button" (clicked)="clearSelection()">
+              Cancelar
+            </app-button>
+            <app-button variant="primary" type="button" (clicked)="upload()" [loading]="service.isLoading()">
+              Guardar Firma
+            </app-button>
           </div>
         }
-      </div>
-
-      @if (previewUrl()) {
-        <div class="actions">
-          <app-button variant="secondary" type="button" (clicked)="clearSelection()">
-            Cancelar
-          </app-button>
-          <app-button variant="primary" type="button" (clicked)="upload()" [loading]="service.isLoading()">
-            Guardar Firma
-          </app-button>
-        </div>
       }
 
       @if (errorMessage()) {
@@ -117,6 +126,35 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
       margin: 0;
       text-align: center;
     }
+
+    .signature-registered {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .signature-display {
+      display: flex;
+      justify-content: center;
+      padding: 1.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      background: #f9fafb;
+    }
+
+    .signature-display img {
+      max-width: 300px;
+      max-height: 120px;
+      object-fit: contain;
+    }
+
+    .registered-message {
+      margin: 0;
+      font-size: 0.875rem;
+      color: #059669;
+      font-weight: 500;
+    }
   `]
 })
 export class SignatureUploadComponent implements OnInit {
@@ -126,7 +164,8 @@ export class SignatureUploadComponent implements OnInit {
   selectedFile = signal<File | null>(null);
   errorMessage = signal<string>('');
 
-  private currentSignatureUrl = signal<string>('');
+  hasSignature = signal(false);
+  currentSignatureUrl = signal<string>('');
 
   ngOnInit(): void {
     this.loadCurrentSignature();
@@ -138,6 +177,7 @@ export class SignatureUploadComponent implements OnInit {
 
     const signature = await this.service.getUserSignature(session.user.id);
     if (signature?.firma_url) {
+      this.hasSignature.set(true);
       this.currentSignatureUrl.set(signature.firma_url);
       this.previewUrl.set(signature.firma_url);
     }
@@ -200,8 +240,10 @@ export class SignatureUploadComponent implements OnInit {
       const url = await this.service.uploadSignature(file);
       const success = await this.service.saveUserSignature(url);
       if (success) {
+        this.hasSignature.set(true);
         this.currentSignatureUrl.set(url);
         this.selectedFile.set(null);
+        this.previewUrl.set('');
       }
     } catch (error) {
       this.errorMessage.set('Error al subir la imagen');
