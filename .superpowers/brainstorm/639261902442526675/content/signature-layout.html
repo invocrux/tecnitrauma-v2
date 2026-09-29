@@ -1,0 +1,28 @@
+<h2>¿Cómo quieres que se vean los campos de firma?</h2>
+<p class="subtitle">Dos opciones para mostrar las firmas de Supervisor y "Quien Realiza"</p>
+
+<div class="options">
+  <div class="option" data-choice="firma-row" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Fila horizontal con imagen + nombre</h3>
+      <p>Dos cajas lado a lado: [Firma Supervisor: img + nombre] [Firma Realizado: img + nombre]</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="firma-stack" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Stack vertical completo</h3>
+      <p>Cada firma en su propia fila con imagen grande, nombre y rol debajo</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="firma-compact" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Muy compacto - Solo imagen + texto</h3>
+      <p>Firma como imagen pequeña (80x40px), nombre alineado a la derecha</p>
+    </div>
+  </div>
+</div>

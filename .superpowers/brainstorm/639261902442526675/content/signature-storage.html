@@ -1,0 +1,28 @@
+<h2>¿Dónde se almacenan las firmas?</h2>
+<p class="subtitle">Cada usuario tendrá una imagen de firma en su perfil</p>
+
+<div class="options">
+  <div class="option" data-choice="user-signatures-table" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Tabla user_signatures (Recomendado)</h3>
+      <p>Nueva tabla con FK a app_users. Cada usuario sube su firma una vez y se reutiliza en todos los reportes.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="blob-storage" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Storage en Supabase</h3>
+      <p>Subir imagen a Supabase Storage, guardar URL en app_users.firma_url</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="reporte-columns" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>En la misma tabla del reporte</h3>
+      <p>firma_supervisor y firma_realizado como columnas en mantenimiento_reportes</p>
+    </div>
+  </div>
+</div>

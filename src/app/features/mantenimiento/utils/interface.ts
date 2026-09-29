@@ -11,6 +11,7 @@ export interface MantenimientoReporte {
   pieza: string;
   referencia: string;
   fecha: string;
+  fecha_mantenimiento?: string | null;
   realizado_por: string | null;
   supervisado_por: string | null;
   motivo: string;
@@ -61,6 +62,7 @@ export interface MantenimientoForm {
   pieza: string;
   referencia: string;
   fecha: string;
+  fecha_mantenimiento?: string | null;
   realizado_por: string | null;
   supervisado_por: string | null;
   motivo: string;

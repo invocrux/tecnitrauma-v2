@@ -147,6 +147,11 @@ import type { MantenimientoReporte } from '../../utils/interface';
                 }
               </div>
 
+              <div class="form-field">
+                <label for="fechaMantenimiento">Fecha de Mantenimiento</label>
+                <input id="fechaMantenimiento" type="date" formControlName="fecha_mantenimiento" />
+              </div>
+
               <div class="form-row-2">
                 <div class="form-field">
                   <label for="realizadoPor">Realizado por</label>
@@ -741,6 +746,7 @@ export class MantenimientoComponent implements OnInit {
       pieza: ['', Validators.required],
       referencia: ['', Validators.required],
       fecha: [this.service.getTodayDate(), Validators.required],
+      fecha_mantenimiento: [null],
       realizado_por: [null, Validators.required],
       supervisado_por: [null, Validators.required],
       motivo: ['', Validators.required],
@@ -820,6 +826,7 @@ ngOnInit(): void {
       pieza: reporte.pieza,
       referencia: reporte.referencia,
       fecha: reporte.fecha,
+      fecha_mantenimiento: reporte.fecha_mantenimiento,
       realizado_por: reporte.realizado_por,
       supervisado_por: reporte.supervisado_por,
       motivo: reporte.motivo,
@@ -917,6 +924,7 @@ ngOnInit(): void {
       pieza: formValue.pieza,
       referencia: formValue.referencia,
       fecha: formValue.fecha,
+      fecha_mantenimiento: formValue.fecha_mantenimiento,
       realizado_por: formValue.realizado_por,
       supervisado_por: formValue.supervisado_por,
       motivo: formValue.motivo,
