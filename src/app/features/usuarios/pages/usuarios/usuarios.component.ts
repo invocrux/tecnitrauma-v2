@@ -2,7 +2,6 @@ import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../../../core/services/supabase.service';
-import { ProfileService } from '../../../profile/services/profile.service';
 import { SignatureUploadComponent } from '../../../profile/components/signature-upload/signature-upload.component';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideUsers } from '@ng-icons/lucide';
@@ -15,12 +14,6 @@ interface AppUser {
   role: string;
   status: string;
   created_at: string;
-}
-
-interface UserSignature {
-  id: string;
-  user_id: string;
-  firma_url: string;
 }
 
 @Component({
@@ -94,19 +87,8 @@ interface UserSignature {
               <div class="signature-section">
                 <h3>Firma</h3>
                 <div class="signature-box">
-                  @if (userSignatureUrl()) {
-                    <div class="signature-display">
-                      <img [src]="userSignatureUrl()" alt="Firma de {{ selectedUser()!.full_name }}" />
-                      <span class="signature-name">{{ selectedUser()!.full_name }}</span>
-                    </div>
-                  } @else {
-                    <div class="signature-empty">
-                      <p>Este usuario aún no tiene firma cargada</p>
-                    </div>
-                  }
                   <app-signature-upload
                     [userId]="selectedUser()!.id"
-                    (signatureUploaded)="onSignatureUploaded($event)"
                   ></app-signature-upload>
                 </div>
               </div>
@@ -438,11 +420,9 @@ interface UserSignature {
 })
 export class UsuariosComponent implements OnInit {
   private supabase = inject(SupabaseService);
-  private profileService = inject(ProfileService);
 
   users = signal<AppUser[]>([]);
   selectedUser = signal<AppUser | null>(null);
-  userSignatureUrl = signal<string>('');
   searchTerm = '';
 
   filteredUsers = computed(() => {
@@ -471,16 +451,6 @@ export class UsuariosComponent implements OnInit {
 
   async selectUser(user: AppUser): Promise<void> {
     this.selectedUser.set(user);
-    await this.loadUserSignature(user.id);
-  }
-
-  async loadUserSignature(userId: string): Promise<void> {
-    const signature = await this.profileService.getUserSignature(userId);
-    this.userSignatureUrl.set(signature?.firma_url || '');
-  }
-
-  onSignatureUploaded(signature: UserSignature): void {
-    this.userSignatureUrl.set(signature.firma_url);
   }
 
   onSearch(): void {

@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, input, output } from '@angular/core';
+import { Component, effect, inject, signal, input, output } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
@@ -157,7 +157,7 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
     }
   `]
 })
-export class SignatureUploadComponent implements OnInit {
+export class SignatureUploadComponent {
   service = inject(ProfileService);
 
   userId = input<string | null>(null);
@@ -169,18 +169,28 @@ export class SignatureUploadComponent implements OnInit {
 
   hasSignature = signal(false);
   currentSignatureUrl = signal<string>('');
+  private signatureRequestId = 0;
 
-  ngOnInit(): void {
-    this.loadCurrentSignature();
+  constructor() {
+    effect(() => {
+      const userId = this.userId();
+      void this.loadCurrentSignature(userId);
+    });
   }
 
-  private async loadCurrentSignature(): Promise<void> {
-    const targetUserId = this.userId();
+  private async loadCurrentSignature(targetUserId: string | null): Promise<void> {
     const session = this.service['supabase'].session();
     const userId = targetUserId || session?.user?.id;
     if (!userId) return;
 
+    const requestId = ++this.signatureRequestId;
+    this.hasSignature.set(false);
+    this.currentSignatureUrl.set('');
+    this.previewUrl.set('');
+
     const signature = await this.service.getUserSignature(userId);
+    if (requestId !== this.signatureRequestId) return;
+
     if (signature?.firma_url) {
       this.hasSignature.set(true);
       this.currentSignatureUrl.set(signature.firma_url);
