@@ -881,6 +881,7 @@ export class MantenimientoComponent implements OnInit {
   realizadoSignatureUrl = signal('');
   supervisorName = signal('');
   realizadoName = signal('');
+  private signatureLoadId = 0;
 
   reportesList = computed<ReportListItem[]>(() => {
     return this.service.reportes().map(r => ({
@@ -1016,6 +1017,8 @@ ngOnInit(): void {
   }
 
   private async loadSignature(type: 'realizado' | 'supervisor', userId: string | null): Promise<void> {
+    const loadId = ++this.signatureLoadId;
+
     if (!userId) {
       if (type === 'realizado') {
         this.realizadoSignatureUrl.set('');
@@ -1031,6 +1034,9 @@ ngOnInit(): void {
     const name = user?.full_name || 'Usuario';
 
     const signature = await this.profileService.getUserSignature(userId);
+
+    if (loadId !== this.signatureLoadId) return;
+
     const url = signature?.firma_url || '';
 
     if (type === 'realizado') {
@@ -1184,6 +1190,10 @@ ngOnInit(): void {
   resetForm(): void {
     this.form = this.createForm();
     this.selectedReporte.set(null);
+    this.supervisorSignatureUrl.set('');
+    this.realizadoSignatureUrl.set('');
+    this.supervisorName.set('');
+    this.realizadoName.set('');
   }
 
   onPrint(): void {
