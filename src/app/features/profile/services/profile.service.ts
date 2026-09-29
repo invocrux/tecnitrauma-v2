@@ -13,15 +13,15 @@ export class ProfileService {
   readonly isLoading = signal(false);
   readonly signatures = signal<Map<string, UserSignature>>(new Map());
 
-  async uploadSignature(file: File): Promise<string> {
+  async uploadSignature(file: File, userId?: string): Promise<string> {
     const session = this.supabase.session();
-    if (!session?.user) {
+    const targetUserId = userId || session?.user?.id;
+    if (!targetUserId) {
       throw new Error('No hay sesión activa');
     }
 
-    const userId = session.user.id;
     const bucket = 'signatures';
-    const fileName = `${userId}/firma.png`;
+    const fileName = `${targetUserId}/firma.png`;
 
     const { data, error } = await this.supabase.getClient().storage
       .from(bucket)
@@ -36,20 +36,20 @@ export class ProfileService {
     return urlData.publicUrl;
   }
 
-  async saveUserSignature(firmaUrl: string): Promise<boolean> {
+  async saveUserSignature(firmaUrl: string, userId?: string): Promise<boolean> {
     const session = this.supabase.session();
-    if (!session?.user) {
+    const targetUserId = userId || session?.user?.id;
+    if (!targetUserId) {
       this.toast.error('No hay sesión activa');
       return false;
     }
 
-    const userId = session.user.id;
     this.isLoading.set(true);
 
     const { error } = await this.supabase.getClient()
       .from('user_signatures')
       .upsert({
-        user_id: userId,
+        user_id: targetUserId,
         firma_url: firmaUrl
       });
 

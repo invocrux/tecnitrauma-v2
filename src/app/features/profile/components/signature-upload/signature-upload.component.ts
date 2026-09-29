@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, input, output } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
@@ -160,6 +160,9 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 export class SignatureUploadComponent implements OnInit {
   service = inject(ProfileService);
 
+  userId = input<string | null>(null);
+  signatureUploaded = output<{ id: string; user_id: string; firma_url: string }>();
+
   previewUrl = signal<string>('');
   selectedFile = signal<File | null>(null);
   errorMessage = signal<string>('');
@@ -172,10 +175,12 @@ export class SignatureUploadComponent implements OnInit {
   }
 
   private async loadCurrentSignature(): Promise<void> {
+    const targetUserId = this.userId();
     const session = this.service['supabase'].session();
-    if (!session?.user) return;
+    const userId = targetUserId || session?.user?.id;
+    if (!userId) return;
 
-    const signature = await this.service.getUserSignature(session.user.id);
+    const signature = await this.service.getUserSignature(userId);
     if (signature?.firma_url) {
       this.hasSignature.set(true);
       this.currentSignatureUrl.set(signature.firma_url);
@@ -237,13 +242,22 @@ export class SignatureUploadComponent implements OnInit {
     if (!file) return;
 
     try {
-      const url = await this.service.uploadSignature(file);
-      const success = await this.service.saveUserSignature(url);
+      const targetUserId = this.userId();
+      const session = this.service['supabase'].session();
+      const userId = targetUserId || session?.user?.id;
+      if (!userId) return;
+
+      const url = await this.service.uploadSignature(file, userId);
+      const success = await this.service.saveUserSignature(url, userId);
       if (success) {
         this.hasSignature.set(true);
         this.currentSignatureUrl.set(url);
         this.selectedFile.set(null);
         this.previewUrl.set('');
+        const signature = await this.service.getUserSignature(userId);
+        if (signature) {
+          this.signatureUploaded.emit(signature);
+        }
       }
     } catch (error) {
       this.errorMessage.set('Error al subir la imagen');
