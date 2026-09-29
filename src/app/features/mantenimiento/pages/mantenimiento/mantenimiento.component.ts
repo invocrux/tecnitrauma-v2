@@ -172,7 +172,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
                       class="readonly-input"
                     />
                   }
-                  @if (form.get('realizado_por')?.invalid && (form.get('realizado_por')?.touched || submitted())) {
+                  @if (isTecnitrauma() && form.get('realizado_por')?.invalid && (form.get('realizado_por')?.touched || submitted())) {
                     <span class="field-error">Este campo es obligatorio</span>
                   }
                 </div>
@@ -226,7 +226,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
           <!-- Sección Firmas -->
           <section class="form-section">
             <h2 class="section-title">Firmas</h2>
-            <div class="signatures-row">
+            <div class="signatures-row" [class.single]="!isTecnitrauma()">
               @if (isTecnitrauma()) {
                 <div class="signature-box">
                   <label>Realizado por</label>
@@ -776,6 +776,10 @@ import type { MantenimientoReporte } from '../../utils/interface';
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 2rem;
+    }
+
+    .signatures-row.single {
+      grid-template-columns: 1fr;
     }
 
     .signature-box {
