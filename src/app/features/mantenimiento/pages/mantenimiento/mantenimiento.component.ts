@@ -51,13 +51,13 @@ import type { MantenimientoReporte } from '../../utils/interface';
             <div class="form-grid">
               <div class="form-field">
                 <label for="tipo">Tipo de mantenimiento</label>
-                <select id="tipo" formControlName="tipo">
+                <select id="tipo" formControlName="tipo" (blur)="form.get('tipo')?.markAsTouched()">
                   <option [ngValue]="null">Seleccionar...</option>
                   <option value="correctivo">Correctivo</option>
                   <option value="predictivo">Predictivo</option>
                   <option value="preventivo">Preventivo</option>
                 </select>
-                @if (form.get('tipo')?.invalid && form.get('tipo')?.touched) {
+                @if (form.get('tipo')?.invalid && (form.get('tipo')?.touched || submitted())) {
                   <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
@@ -65,20 +65,20 @@ import type { MantenimientoReporte } from '../../utils/interface';
               <div class="form-field">
                 <label for="numRemision">N° de remisión</label>
                 <input id="numRemision" type="text" formControlName="num_remision" />
-                @if (form.get('num_remision')?.invalid && form.get('num_remision')?.touched) {
+                @if (form.get('num_remision')?.invalid && (form.get('num_remision')?.touched || submitted())) {
                   <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
 
               <div class="form-field">
                 <label for="proveedor">Proveedor</label>
-                <select id="proveedor" formControlName="marca_id">
+                <select id="proveedor" formControlName="marca_id" (blur)="form.get('marca_id')?.markAsTouched()">
                   <option [ngValue]="null">Seleccionar...</option>
                   @for (marca of service.marcas(); track marca.id) {
                     <option [value]="marca.id">{{ marca.nombre }}</option>
                   }
                 </select>
-                @if (form.get('marca_id')?.invalid && form.get('marca_id')?.touched) {
+                @if (form.get('marca_id')?.invalid && (form.get('marca_id')?.touched || submitted())) {
                   <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
@@ -97,7 +97,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
                     <ng-icon name="lucideSearch" />
                   </button>
                 </div>
-                @if (form.get('serial')?.invalid && form.get('serial')?.touched) {
+                @if (form.get('serial')?.invalid && (form.get('serial')?.touched || submitted())) {
                   <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
@@ -127,7 +127,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
                     <ng-icon name="lucideSearch" />
                   </button>
                 </div>
-                @if (form.get('pieza')?.invalid && form.get('pieza')?.touched) {
+                @if (form.get('pieza')?.invalid && (form.get('pieza')?.touched || submitted())) {
                   <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
@@ -135,7 +135,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
               <div class="form-field">
                 <label for="referencia">Referencia</label>
                 <input id="referencia" type="text" [value]="selectedPiezaReferencia()" readonly class="readonly-input" />
-                @if (form.get('referencia')?.invalid && form.get('referencia')?.touched) {
+                @if (form.get('referencia')?.invalid && (form.get('referencia')?.touched || submitted())) {
                   <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
@@ -143,7 +143,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
               <div class="form-field">
                 <label for="fecha">Fecha de Solicitud para Mantenimiento</label>
                 <input id="fecha" type="date" formControlName="fecha" />
-                @if (form.get('fecha')?.invalid && form.get('fecha')?.touched) {
+                @if (form.get('fecha')?.invalid && (form.get('fecha')?.touched || submitted())) {
                   <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
@@ -157,7 +157,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
                 <div class="form-field">
                   <label for="realizadoPor">Realizado por</label>
                   @if (isTecnitrauma()) {
-                    <select id="realizadoPor" formControlName="realizado_por">
+                    <select id="realizadoPor" formControlName="realizado_por" (blur)="form.get('realizado_por')?.markAsTouched()">
                       <option [ngValue]="null">Seleccionar...</option>
                       @for (user of service.usuarios(); track user.id) {
                         <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
@@ -172,20 +172,20 @@ import type { MantenimientoReporte } from '../../utils/interface';
                       class="readonly-input"
                     />
                   }
-                  @if (form.get('realizado_por')?.invalid && form.get('realizado_por')?.touched) {
+                  @if (form.get('realizado_por')?.invalid && (form.get('realizado_por')?.touched || submitted())) {
                     <span class="field-error">Este campo es obligatorio</span>
                   }
                 </div>
 
                 <div class="form-field">
                   <label for="supervisadoPor">Supervisado por</label>
-                  <select id="supervisadoPor" formControlName="supervisado_por">
+                  <select id="supervisadoPor" formControlName="supervisado_por" (blur)="form.get('supervisado_por')?.markAsTouched()">
                     <option [ngValue]="null">Seleccionar...</option>
                     @for (user of service.usuarios(); track user.id) {
                       <option [value]="user.id">{{ (user.full_name || 'Nombre no registrado') | titlecase }}</option>
                     }
                   </select>
-                  @if (form.get('supervisado_por')?.invalid && form.get('supervisado_por')?.touched) {
+                  @if (form.get('supervisado_por')?.invalid && (form.get('supervisado_por')?.touched || submitted())) {
                     <span class="field-error">Este campo es obligatorio</span>
                   }
                 </div>
@@ -200,7 +200,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
               <div class="form-field full-width">
                 <label for="motivo">Motivo de solicitud</label>
                 <textarea id="motivo" formControlName="motivo" rows="3" placeholder="Describa el motivo de la solicitud..."></textarea>
-                @if (form.get('motivo')?.invalid && form.get('motivo')?.touched) {
+                @if (form.get('motivo')?.invalid && (form.get('motivo')?.touched || submitted())) {
                   <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
@@ -208,7 +208,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
               <div class="form-field full-width">
                 <label for="descripcion">Descripción del mantenimiento</label>
                 <textarea id="descripcion" formControlName="descripcion" rows="4" placeholder="Detalle el trabajo realizado..."></textarea>
-                @if (form.get('descripcion')?.invalid && form.get('descripcion')?.touched) {
+                @if (form.get('descripcion')?.invalid && (form.get('descripcion')?.touched || submitted())) {
                   <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
@@ -216,7 +216,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
               <div class="form-field full-width">
                 <label for="observaciones">Observaciones</label>
                 <textarea id="observaciones" formControlName="observaciones" rows="2" placeholder="Observaciones adicionales..."></textarea>
-                @if (form.get('observaciones')?.invalid && form.get('observaciones')?.touched) {
+                @if (form.get('observaciones')?.invalid && (form.get('observaciones')?.touched || submitted())) {
                   <span class="field-error">Este campo es obligatorio</span>
                 }
               </div>
@@ -870,6 +870,7 @@ export class MantenimientoComponent implements OnInit {
 
   form!: FormGroup;
   selectedReporte = signal<MantenimientoReporte | null>(null);
+  submitted = signal(false);
   showDeleteModal = signal(false);
   showSerialModal = signal(false);
   showPiezaModal = signal(false);
@@ -1144,6 +1145,7 @@ ngOnInit(): void {
   }
 
   async onSubmit(): Promise<void> {
+    this.submitted.set(true);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.toast.error('Por favor complete los campos requeridos');
