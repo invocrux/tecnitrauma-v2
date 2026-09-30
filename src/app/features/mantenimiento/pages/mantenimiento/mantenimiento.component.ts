@@ -44,7 +44,13 @@ import type { MantenimientoReporte } from '../../utils/interface';
           </div>
         </div>
 
-        <form class="card-body" [formGroup]="form" (ngSubmit)="onSubmit()">
+        @if (showEmptyState()) {
+          <div class="empty-state">
+            <img src="assets/new-reporte.svg" alt="Seleccionar orden" class="empty-state-img" />
+            <p class="empty-state-text">Selecciona una orden para comenzar<br>o el botón <strong>Nuevo</strong> para crear</p>
+          </div>
+        } @else {
+          <form class="card-body" [formGroup]="form" (ngSubmit)="onSubmit()">
           <!-- Sección 1: Identificación -->
           <section class="form-section">
             <h2 class="section-title">INFORMACIÓN GENERAL</h2>
@@ -278,6 +284,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
             </div>
           </div>
         </form>
+        }
       </div>
     </div>
 
@@ -867,6 +874,29 @@ import type { MantenimientoReporte } from '../../utils/interface';
         grid-template-columns: repeat(2, 1fr);
       }
     }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .empty-state-img {
+      width: 180px;
+      height: auto;
+      opacity: 0.85;
+    }
+
+    .empty-state-text {
+      font-size: 1rem;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.6;
+    }
   `]
 })
 export class MantenimientoComponent implements OnInit {
@@ -878,6 +908,7 @@ export class MantenimientoComponent implements OnInit {
 
   form!: FormGroup;
   selectedReporte = signal<MantenimientoReporte | null>(null);
+  showEmptyState = signal(true);
   submitted = signal(false);
   showDeleteModal = signal(false);
   showSerialModal = signal(false);
@@ -1081,6 +1112,7 @@ ngOnInit(): void {
     const reporte = this.service.reportes().find(r => r.id === item.id);
     if (!reporte) return;
     this.selectedReporte.set(reporte);
+    this.showEmptyState.set(false);
     this.form.patchValue({
       tipo: reporte.tipo,
       num_remision: reporte.num_remision,
@@ -1139,6 +1171,7 @@ ngOnInit(): void {
 
   onNuevo(): void {
     this.selectedReporte.set(null);
+    this.showEmptyState.set(false);
     this.form.get('realizado_por')?.enable({ emitEvent: false });
     this.form.reset({
       tipo: null,
@@ -1176,7 +1209,9 @@ ngOnInit(): void {
     const success = await this.service.eliminar(reporte.id);
     if (success) {
       this.showDeleteModal.set(false);
-      this.onNuevo();
+      this.selectedReporte.set(null);
+      this.showEmptyState.set(true);
+      this.form.reset();
     }
   }
 
