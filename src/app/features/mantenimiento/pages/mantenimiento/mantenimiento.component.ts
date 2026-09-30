@@ -1134,7 +1134,7 @@ ngOnInit(): void {
       descripcion: reporte.descripcion,
       observaciones: reporte.observaciones
     });
-    this.form.markAllAsTouched();
+    this.resetValidationState();
     this.formChangeTrigger.update(v => v + 1);
     if (reporte.serial) {
       const set = this.service.setsInstrumentales().find(s => s.serial === reporte.serial);
@@ -1144,6 +1144,16 @@ ngOnInit(): void {
     }
     this.loadSignature('realizado', reporte.realizado_por);
     this.loadSignature('supervisor', reporte.supervisado_por);
+  }
+
+  private resetValidationState(): void {
+    this.submitted.set(false);
+    Object.values(this.form.controls).forEach(control => {
+      control.markAsUntouched();
+      control.markAsPristine();
+    });
+    this.form.markAsUntouched();
+    this.form.markAsPristine();
   }
 
   onSearch(term: string): void {
