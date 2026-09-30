@@ -875,7 +875,13 @@ import type { MantenimientoReporte } from '../../utils/interface';
       }
     }
 
+    .page-card:has(.empty-state) {
+      display: flex;
+      flex-direction: column;
+    }
+
     .empty-state {
+      flex: 1 1 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -886,7 +892,7 @@ import type { MantenimientoReporte } from '../../utils/interface';
     }
 
     .empty-state-img {
-      width: 180px;
+      width: 50%;
       height: auto;
       opacity: 0.85;
     }
