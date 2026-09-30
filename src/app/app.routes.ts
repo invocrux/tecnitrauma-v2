@@ -18,7 +18,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
       { path: 'mantenimiento', loadComponent: () => import('./features/mantenimiento/pages/mantenimiento/mantenimiento.component').then(m => m.MantenimientoComponent) },
-      { path: 'novedades-cx', loadComponent: () => import('./features/novedades-cx/pages/novedades-cx/novedades-cx.component').then(m => m.NovedadesCXComponent) },
+      { path: 'novedades', loadComponent: () => import('./features/novedades-cx/pages/novedades-cx/novedades-cx.component').then(m => m.NovedadesCXComponent) },
       { path: 'perfil', loadComponent: () => import('./features/profile/pages/profile/profile.component').then(m => m.ProfileComponent) },
       { path: 'usuarios', loadComponent: () => import('./features/usuarios/pages/usuarios/usuarios.component').then(m => m.UsuariosComponent) }
     ]

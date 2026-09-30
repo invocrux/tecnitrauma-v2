@@ -33,12 +33,16 @@ code, pre {
   }
 
   body.printing-maintenance app-sidebar,
-  body.printing-maintenance app-header {
+  body.printing-novedades app-sidebar,
+  body.printing-maintenance app-header,
+  body.printing-novedades app-header {
     display: none !important;
   }
 
   body.printing-maintenance app-main-layout,
-  body.printing-maintenance app-mantenimiento {
+  body.printing-novedades app-main-layout,
+  body.printing-maintenance app-mantenimiento,
+  body.printing-novedades app-novedades-cx {
     display: block !important;
     width: 100% !important;
     max-width: none !important;
@@ -50,7 +54,9 @@ code, pre {
   }
 
   body.printing-maintenance .main-content,
-  body.printing-maintenance .page-content {
+  body.printing-novedades .main-content,
+  body.printing-maintenance .page-content,
+  body.printing-novedades .page-content {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;

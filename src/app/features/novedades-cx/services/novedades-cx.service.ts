@@ -3,6 +3,17 @@ import { SupabaseService } from '../../../core/services/supabase.service';
 import { ToastService } from '../../../core/services/toast.service';
 import type { NovedadCX, NovedadCXForm } from '../utils/interface';
 
+export interface UsuarioOption {
+  id: string;
+  email: string;
+  full_name: string;
+}
+
+export interface MarcaOption {
+  id: number;
+  nombre: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class NovedadesCXService {
   private supabase = inject(SupabaseService);
@@ -10,6 +21,10 @@ export class NovedadesCXService {
 
   readonly isLoading = signal(false);
   readonly novedades = signal<NovedadCX[]>([]);
+  readonly usuarios = signal<UsuarioOption[]>([]);
+  readonly proveedores = signal<MarcaOption[]>([]);
+
+  private evidenciaUrls = new Map<string, string>();
 
   async loadNovedades(): Promise<void> {
     this.isLoading.set(true);
@@ -27,7 +42,40 @@ export class NovedadesCXService {
     this.isLoading.set(false);
   }
 
-  async guardar(form: NovedadCXForm): Promise<boolean> {
+  async loadOptions(): Promise<void> {
+    await Promise.all([
+      this.loadUsuarios(),
+      this.loadProveedores()
+    ]);
+  }
+
+  async loadUsuarios(): Promise<void> {
+    const { data, error } = await this.supabase.getClient()
+      .from('app_users')
+      .select('id, email, full_name')
+      .order('full_name');
+
+    if (error) {
+      this.toast.error('Error cargando usuarios');
+      return;
+    }
+    this.usuarios.set(data || []);
+  }
+
+  async loadProveedores(): Promise<void> {
+    const { data, error } = await this.supabase.getClient()
+      .from('marcas')
+      .select('id, nombre')
+      .order('nombre');
+
+    if (error) {
+      this.toast.error('Error cargando proveedores');
+      return;
+    }
+    this.proveedores.set(data || []);
+  }
+
+  async guardar(form: NovedadCXForm, id?: string): Promise<boolean> {
     this.isLoading.set(true);
 
     const session = this.supabase.session();
@@ -38,24 +86,32 @@ export class NovedadesCXService {
       set_instrumental: form.set_instrumental,
       serial: form.serial,
       pieza_reportada: form.pieza_reportada,
-      referencia: form.referencia,
+      referencia: form.referencia || undefined,
       fecha_inspeccion: form.fecha_inspeccion,
       realizado_por: form.realizado_por,
       proveedor: form.proveedor,
       continua_mantenimiento: form.continua_mantenimiento,
       estado_gestion: form.estado_gestion,
       descripcion_novedad: form.descripcion_novedad,
-      tipo_falla: form.tipo_falla,
-      descripcion_accion: form.descripcion_accion,
-      fotografia_evidencia: form.fotografia_evidencia,
-      observaciones: form.observaciones,
-      estado: 'borrador',
-      created_by: session?.user?.id
+      tipo_falla: form.tipo_falla ?? undefined,
+      descripcion_accion: form.descripcion_accion || undefined,
+      fotografia_evidencia: form.fotografia_evidencia || undefined,
+      observaciones: form.observaciones || undefined
     };
 
-    const { error } = await this.supabase.getClient()
-      .from('novedades_cx')
-      .insert(novedad);
+    let error: { message: string } | null = null;
+    if (id) {
+      const res = await this.supabase.getClient()
+        .from('novedades_cx')
+        .update(novedad)
+        .eq('id', id);
+      error = res.error;
+    } else {
+      const res = await this.supabase.getClient()
+        .from('novedades_cx')
+        .insert({ ...novedad, estado: 'borrador', created_by: session?.user?.id });
+      error = res.error;
+    }
 
     this.isLoading.set(false);
 
@@ -64,7 +120,7 @@ export class NovedadesCXService {
       return false;
     }
 
-    this.toast.success('Novedad guardada correctamente');
+    this.toast.success(id ? 'Novedad actualizada correctamente' : 'Novedad guardada correctamente');
     await this.loadNovedades();
     return true;
   }
@@ -86,6 +142,40 @@ export class NovedadesCXService {
     this.toast.success('Novedad eliminada');
     await this.loadNovedades();
     return true;
+  }
+
+  async uploadEvidencia(file: File): Promise<{ path: string; url: string } | null> {
+    const ext = file.name.split('.').pop() || 'png';
+    const path = `novedades/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+    const { data, error } = await this.supabase.getClient().storage
+      .from('Imagenes')
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error || !data) {
+      this.toast.error('Error subiendo evidencia: ' + (error?.message || ''));
+      return null;
+    }
+
+    const url = await this.getEvidenciaUrl(path);
+    return url ? { path, url } : null;
+  }
+
+  async getEvidenciaUrl(value: string | null | undefined): Promise<string> {
+    if (!value) return '';
+    if (value.startsWith('http')) return value;
+    if (this.evidenciaUrls.has(value)) return this.evidenciaUrls.get(value)!;
+
+    const { data, error } = await this.supabase.getClient().storage
+      .from('Imagenes')
+      .createSignedUrl(value, 3600);
+
+    if (error || !data) return '';
+    this.evidenciaUrls.set(value, data.signedUrl);
+    return data.signedUrl;
   }
 
   getTodayDate(): string {
