@@ -4,6 +4,8 @@ export type TipoFalla = 'mecanica' | 'electrica' | 'software' | 'material' | 'us
 export interface NovedadCX {
   id?: string;
   fecha_cirugia: string;
+  institucion: string;
+  cirugia_procedimiento: string;
   num_remision: string;
   num_caso: string;
   set_instrumental: string;
@@ -28,6 +30,8 @@ export interface NovedadCX {
 
 export interface NovedadCXForm {
   fecha_cirugia: string;
+  institucion: string;
+  cirugia_procedimiento: string;
   num_remision: string;
   num_caso: string;
   set_instrumental: string;

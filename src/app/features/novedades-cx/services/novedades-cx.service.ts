@@ -117,6 +117,8 @@ export class NovedadesCXService {
     const session = this.supabase.session();
     const novedad: Partial<NovedadCX> = {
       fecha_cirugia: form.fecha_cirugia,
+      institucion: form.institucion || undefined,
+      cirugia_procedimiento: form.cirugia_procedimiento || undefined,
       num_remision: form.num_remision,
       num_caso: form.num_caso,
       set_instrumental: form.set_instrumental,

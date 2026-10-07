@@ -58,6 +58,16 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
                 </div>
 
                 <div class="form-field">
+                  <label for="institucion">Institución</label>
+                  <input id="institucion" type="text" [(ngModel)]="form.institucion" name="institucion" placeholder="Nombre de la clínica u hospital" />
+                </div>
+
+                <div class="form-field full-width">
+                  <label for="cirugiaProcedimiento">Cirugía/Procedimiento</label>
+                  <input id="cirugiaProcedimiento" type="text" [(ngModel)]="form.cirugia_procedimiento" name="cirugia_procedimiento" placeholder="Procedimiento que se estaba realizando con el equipo" />
+                </div>
+
+                <div class="form-field">
                   <label for="numRemision">Número de Remisión</label>
                   <input id="numRemision" type="text" [(ngModel)]="form.num_remision" name="num_remision" placeholder="REM-001" />
                   @if (errors()['num_remision']) {
@@ -305,10 +315,12 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
       <div class="print-section-title">INFORMACIÓN GENERAL</div>
       <div class="print-grid">
         <div><strong>FECHA DE CIRUGÍA:</strong> {{ formatPrintDate(form.fecha_cirugia) }}</div>
+        <div><strong>INSTITUCIÓN:</strong> {{ form.institucion || '—' }}</div>
+        <div class="print-span-2"><strong>CIRUGÍA/PROCEDIMIENTO:</strong> {{ form.cirugia_procedimiento || '—' }}</div>
         <div><strong>No. REMISIÓN:</strong> {{ form.num_remision || '—' }}</div>
         <div><strong>No. CASO:</strong> {{ form.num_caso || '—' }}</div>
-        <div><strong>EQUIPO:</strong> {{ form.set_instrumental || '—' }}</div>
         <div><strong>SERIAL:</strong> {{ form.serial || '—' }}</div>
+        <div><strong>EQUIPO:</strong> {{ form.set_instrumental || '—' }}</div>
         <div><strong>PIEZA REPORTADA:</strong> {{ form.pieza_reportada || '—' }}</div>
         <div><strong>REFERENCIA:</strong> {{ form.referencia || '—' }}</div>
         <div><strong>FECHA DE INSPECCIÓN:</strong> {{ formatPrintDate(form.fecha_inspeccion) }}</div>
@@ -769,6 +781,10 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
         overflow-wrap: anywhere;
       }
 
+      .print-grid > div.print-span-2 {
+        grid-column: 1 / -1;
+      }
+
       .print-text-block {
         min-height: 22mm;
         padding: 2mm;
@@ -898,6 +914,8 @@ export class NovedadesCXComponent implements OnInit {
   private emptyForm(): NovedadCXForm {
     return {
       fecha_cirugia: this.service.getTodayDate(),
+      institucion: '',
+      cirugia_procedimiento: '',
       num_remision: '',
       num_caso: '',
       set_instrumental: '',
@@ -987,6 +1005,8 @@ export class NovedadesCXComponent implements OnInit {
   private fromReporte(novedad: NovedadCX): NovedadCXForm {
     return {
       fecha_cirugia: novedad.fecha_cirugia,
+      institucion: novedad.institucion || '',
+      cirugia_procedimiento: novedad.cirugia_procedimiento || '',
       num_remision: novedad.num_remision,
       num_caso: novedad.num_caso,
       set_instrumental: novedad.set_instrumental,
