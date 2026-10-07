@@ -38,7 +38,7 @@ interface Provider {
           <div class="list-header">
             <input
               type="text"
-              placeholder="Buscar usuario..."
+              placeholder="Buscar usuario o proveedor..."
               [(ngModel)]="searchTerm"
               (input)="onSearch()"
               class="search-input"
@@ -60,6 +60,26 @@ interface Provider {
               </div>
             } @empty {
               <div class="empty-list">No hay usuarios</div>
+            }
+
+            <div class="list-section-title">Proveedores</div>
+            @for (provider of filteredProviders(); track provider.id) {
+              <div
+                class="list-item provider-item"
+                [class.active]="selectedProvider()?.id === provider.id"
+                (click)="selectProvider(provider)"
+              >
+                <div class="user-avatar provider-avatar">
+                  <ng-icon name="lucideBuilding2"></ng-icon>
+                </div>
+                <div class="user-info">
+                  <span class="user-name">{{ provider.nombre }}</span>
+                  <span class="user-email">Proveedor externo</span>
+                </div>
+                <div class="user-role-badge role-usuario">PROVEEDOR</div>
+              </div>
+            } @empty {
+              <div class="empty-list">No hay proveedores</div>
             }
           </div>
         </aside>
@@ -99,48 +119,44 @@ interface Provider {
                 </div>
               </div>
             </div>
-          } @else {
-            <div class="no-selection">
-              <ng-icon name="lucideUsers" size="48"></ng-icon>
-              <p>Seleccione un usuario para ver sus detalles</p>
-            </div>
-          }
-
-          <div class="providers-card">
-            <div class="providers-header">
-              <ng-icon name="lucideBuilding2"></ng-icon>
-              <div>
-                <h2>Proveedores</h2>
-                <p>Gestione las firmas de proveedores externos</p>
+          } @else if (selectedProvider()) {
+            <div class="detail-card">
+              <div class="detail-header">
+                <div class="user-avatar-large provider-avatar-large">
+                  <ng-icon name="lucideBuilding2"></ng-icon>
+                </div>
+                <div class="user-header-info">
+                  <h2>{{ selectedProvider()!.nombre }}</h2>
+                  <span class="user-email">Proveedor externo</span>
+                </div>
               </div>
-            </div>
 
-            <div class="provider-list">
-              @for (provider of providers(); track provider.id) {
-                <button
-                  type="button"
-                  class="provider-pill"
-                  [class.active]="selectedProvider()?.id === provider.id"
-                  (click)="selectProvider(provider)"
-                >
-                  {{ provider.nombre }}
-                </button>
-              } @empty {
-                <span class="empty-list">No hay proveedores</span>
-              }
-            </div>
+              <div class="detail-info">
+                <div class="info-row">
+                  <span class="info-label">Tipo</span>
+                  <span class="info-value role-badge role-usuario">Proveedor</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Estado</span>
+                  <span class="info-value status-badge" [class]="'status-' + selectedProvider()!.estado">{{ selectedProvider()!.estado }}</span>
+                </div>
+              </div>
 
-            @if (selectedProvider()) {
-              <div class="signature-section provider-signature-section">
-                <h3>Firma de {{ selectedProvider()!.nombre }}</h3>
+              <div class="signature-section">
+                <h3>Firma</h3>
                 <div class="signature-box">
                   <app-signature-upload
                     [providerId]="selectedProvider()!.id"
                   ></app-signature-upload>
                 </div>
               </div>
-            }
-          </div>
+            </div>
+          } @else {
+            <div class="no-selection">
+              <ng-icon name="lucideUsers" size="48"></ng-icon>
+              <p>Seleccione un usuario o proveedor para ver sus detalles</p>
+            </div>
+          }
         </main>
       </div>
     </div>
@@ -223,6 +239,17 @@ interface Provider {
       border-left: 3px solid #3b82f6;
     }
 
+    .list-section-title {
+      padding: 0.875rem 1rem 0.5rem;
+      color: #6b7280;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-top: 1px solid #e5e7eb;
+      background: #fafafa;
+    }
+
     .user-avatar {
       width: 36px;
       height: 36px;
@@ -249,6 +276,21 @@ interface Provider {
       font-size: 1.25rem;
       font-weight: 600;
       flex-shrink: 0;
+    }
+
+    .provider-avatar,
+    .provider-avatar-large {
+      background: #2563eb;
+    }
+
+    .provider-avatar ng-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .provider-avatar-large ng-icon {
+      width: 28px;
+      height: 28px;
     }
 
     .user-info {
@@ -536,6 +578,14 @@ export class UsuariosComponent implements OnInit {
     );
   });
 
+  filteredProviders = computed(() => {
+    const term = this.searchTerm.toLowerCase();
+    if (!term) return this.providers();
+    return this.providers().filter(provider =>
+      provider.nombre.toLowerCase().includes(term)
+    );
+  });
+
   ngOnInit(): void {
     this.loadUsers();
     this.loadProviders();
@@ -554,6 +604,7 @@ export class UsuariosComponent implements OnInit {
 
   async selectUser(user: AppUser): Promise<void> {
     this.selectedUser.set(user);
+    this.selectedProvider.set(null);
   }
 
   async loadProviders(): Promise<void> {
@@ -565,12 +616,12 @@ export class UsuariosComponent implements OnInit {
 
     if (!error && data) {
       this.providers.set(data);
-      this.selectedProvider.set(data[0] || null);
     }
   }
 
   selectProvider(provider: Provider): void {
     this.selectedProvider.set(provider);
+    this.selectedUser.set(null);
   }
 
   onSearch(): void {
