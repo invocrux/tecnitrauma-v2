@@ -7,12 +7,15 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
   imports: [ButtonComponent],
   template: `
     <div class="signature-upload">
-      @if (hasSignature()) {
+      @if (hasSignature() && !isEditing()) {
         <div class="signature-registered">
           <div class="signature-display">
             <img [src]="currentSignatureUrl()" alt="Tu firma" />
           </div>
           <p class="registered-message">Tu firma está registrada</p>
+          <app-button variant="secondary" type="button" (clicked)="startEdit()">
+            Editar firma
+          </app-button>
         </div>
       } @else {
         <div class="upload-area" (click)="fileInput.click()" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
@@ -26,6 +29,9 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
           @if (previewUrl()) {
             <div class="preview">
               <img [src]="previewUrl()" alt="Vista previa de firma" />
+              @if (isEditing() && !selectedFile()) {
+                <span class="hint replace-hint">Selecciona una nueva imagen para reemplazar la actual</span>
+              }
             </div>
           } @else {
             <div class="placeholder">
@@ -42,12 +48,14 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 
         @if (previewUrl()) {
           <div class="actions">
-            <app-button variant="secondary" type="button" (clicked)="clearSelection()">
+            <app-button variant="secondary" type="button" (clicked)="onCancel()">
               Cancelar
             </app-button>
-            <app-button variant="primary" type="button" (clicked)="upload()" [loading]="service.isLoading()">
-              Guardar Firma
-            </app-button>
+            @if (selectedFile()) {
+              <app-button variant="primary" type="button" (clicked)="upload()" [loading]="service.isLoading()">
+                {{ isEditing() ? 'Reemplazar Firma' : 'Guardar Firma' }}
+              </app-button>
+            }
           </div>
         }
       }
@@ -105,7 +113,14 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
 
     .preview {
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
       justify-content: center;
+    }
+
+    .replace-hint {
+      font-size: 0.75rem;
     }
 
     .preview img {
@@ -170,6 +185,7 @@ export class SignatureUploadComponent {
 
   hasSignature = signal(false);
   currentSignatureUrl = signal<string>('');
+  isEditing = signal(false);
   private signatureRequestId = 0;
 
   constructor() {
@@ -189,6 +205,7 @@ export class SignatureUploadComponent {
     this.hasSignature.set(false);
     this.currentSignatureUrl.set('');
     this.previewUrl.set('');
+    this.isEditing.set(false);
 
     const signature = providerId
       ? await this.service.getProviderSignature(providerId)
@@ -251,6 +268,22 @@ export class SignatureUploadComponent {
     this.previewUrl.set(this.currentSignatureUrl());
   }
 
+  startEdit(): void {
+    this.isEditing.set(true);
+    this.selectedFile.set(null);
+    this.previewUrl.set(this.currentSignatureUrl());
+  }
+
+  onCancel(): void {
+    if (this.isEditing()) {
+      this.isEditing.set(false);
+      this.selectedFile.set(null);
+      this.previewUrl.set('');
+    } else {
+      this.clearSelection();
+    }
+  }
+
   async upload(): Promise<void> {
     const file = this.selectedFile();
     if (!file) return;
@@ -271,6 +304,7 @@ export class SignatureUploadComponent {
       if (success) {
         this.hasSignature.set(true);
         this.currentSignatureUrl.set(url);
+        this.isEditing.set(false);
         this.selectedFile.set(null);
         this.previewUrl.set('');
         const signature = providerId ? null : await this.service.getUserSignature(userId!);
