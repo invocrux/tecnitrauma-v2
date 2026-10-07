@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { ToastService } from '../../../core/services/toast.service';
 import type { NovedadCX, NovedadCXForm } from '../utils/interface';
+import type { SetInstrumental, SetPieza } from '../../mantenimiento/utils/interface';
 
 export interface UsuarioOption {
   id: string;
@@ -23,6 +24,8 @@ export class NovedadesCXService {
   readonly novedades = signal<NovedadCX[]>([]);
   readonly usuarios = signal<UsuarioOption[]>([]);
   readonly proveedores = signal<MarcaOption[]>([]);
+  readonly setsInstrumentales = signal<SetInstrumental[]>([]);
+  readonly setPiezas = signal<SetPieza[]>([]);
 
   private evidenciaUrls = new Map<string, string>();
 
@@ -45,8 +48,41 @@ export class NovedadesCXService {
   async loadOptions(): Promise<void> {
     await Promise.all([
       this.loadUsuarios(),
-      this.loadProveedores()
+      this.loadProveedores(),
+      this.loadSetsInstrumentales()
     ]);
+  }
+
+  async loadSetsInstrumentales(): Promise<void> {
+    const { data, error } = await this.supabase.getClient()
+      .from('sets_instrumentales')
+      .select('id, serial, nombre')
+      .order('serial');
+
+    if (error) {
+      this.toast.error('Error cargando sets instrumentales');
+      return;
+    }
+    this.setsInstrumentales.set(data || []);
+  }
+
+  async loadSetPiezas(setId?: number): Promise<void> {
+    let query = this.supabase.getClient()
+      .from('set_piezas')
+      .select('id, set_id, nombre, referencia')
+      .order('nombre');
+
+    if (setId) {
+      query = query.eq('set_id', setId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      this.toast.error('Error cargando piezas');
+      return;
+    }
+    this.setPiezas.set(data || []);
   }
 
   async loadUsuarios(): Promise<void> {

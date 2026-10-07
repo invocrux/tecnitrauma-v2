@@ -1,10 +1,11 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { lucideAlertCircle, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideUpload, lucideX } from '@ng-icons/lucide';
+import { lucideAlertCircle, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideUpload, lucideX, lucideSearch } from '@ng-icons/lucide';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ConfirmDeleteModalComponent } from '../../../../shared/components/confirm-delete-modal/confirm-delete-modal.component';
 import { ReportListPanelComponent, type ReportListItem } from '../../../../shared/components/report-list-panel/report-list-panel.component';
+import { SearchModalComponent, type SearchItem } from '../../../../shared/components/search-modal/search-modal.component';
 import { NovedadesCXService } from '../../services/novedades-cx.service';
 import { ProfileService } from '../../../profile/services/profile.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -12,8 +13,8 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
 
 @Component({
   selector: 'app-novedades-cx',
-  imports: [FormsModule, NgIconComponent, ButtonComponent, ConfirmDeleteModalComponent, ReportListPanelComponent],
-  providers: [provideIcons({ lucideAlertCircle, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideUpload, lucideX })],
+  imports: [FormsModule, NgIconComponent, ButtonComponent, ConfirmDeleteModalComponent, ReportListPanelComponent, SearchModalComponent],
+  providers: [provideIcons({ lucideAlertCircle, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideUpload, lucideX, lucideSearch })],
   template: `
     <div class="page-container">
       <app-report-list-panel
@@ -70,24 +71,43 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
                 </div>
 
                 <div class="form-field">
-                  <label for="setInstrumental">Set / Instrumental</label>
-                  <input id="setInstrumental" type="text" [(ngModel)]="form.set_instrumental" name="set_instrumental" placeholder="Set de cirugía" />
-                  @if (errors()['set_instrumental']) {
-                    <span class="field-error">{{ errors()['set_instrumental'] }}</span>
-                  }
-                </div>
-
-                <div class="form-field">
                   <label for="serial">Serial</label>
-                  <input id="serial" type="text" [(ngModel)]="form.serial" name="serial" placeholder="SN-00000" />
+                  <div class="search-input-wrapper">
+                    <input
+                      type="text"
+                      [value]="serialDisplay()"
+                      placeholder="Seleccionar serial..."
+                      readonly
+                      class="search-field-input"
+                    />
+                    <button type="button" class="search-btn" (click)="openSerialModal()">
+                      <ng-icon name="lucideSearch" />
+                    </button>
+                  </div>
                   @if (errors()['serial']) {
                     <span class="field-error">{{ errors()['serial'] }}</span>
                   }
                 </div>
 
                 <div class="form-field">
+                  <label for="equipo">Equipo</label>
+                  <input id="equipo" type="text" [value]="form.set_instrumental" readonly class="readonly-input" />
+                </div>
+
+                <div class="form-field">
                   <label for="piezaReportada">Pieza Reportada</label>
-                  <input id="piezaReportada" type="text" [(ngModel)]="form.pieza_reportada" name="pieza_reportada" placeholder="Pieza con novedad" />
+                  <div class="search-input-wrapper">
+                    <input
+                      type="text"
+                      [value]="form.pieza_reportada"
+                      placeholder="Seleccionar pieza..."
+                      readonly
+                      class="search-field-input"
+                    />
+                    <button type="button" class="search-btn" (click)="openPiezaModal()" [disabled]="!form.serial">
+                      <ng-icon name="lucideSearch" />
+                    </button>
+                  </div>
                   @if (errors()['pieza_reportada']) {
                     <span class="field-error">{{ errors()['pieza_reportada'] }}</span>
                   }
@@ -95,7 +115,7 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
 
                 <div class="form-field">
                   <label for="referencia">Referencia</label>
-                  <input id="referencia" type="text" [(ngModel)]="form.referencia" name="referencia" placeholder="REF-001" />
+                  <input id="referencia" type="text" [value]="form.referencia" readonly class="readonly-input" />
                 </div>
 
                 <div class="form-field">
@@ -248,6 +268,26 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
         (confirmed)="onConfirmDelete()"
         (cancelled)="showDeleteModal.set(false)">
       </app-confirm-delete-modal>
+
+      <app-search-modal
+        [title]="'Buscar Serial'"
+        [placeholder]="'Buscar por serial...'"
+        [items]="serialSearchItems()"
+        [selectedId]="form.serial"
+        [isOpen]="showSerialModal()"
+        (itemSelected)="onSerialSelected($event)"
+        (closed)="showSerialModal.set(false)">
+      </app-search-modal>
+
+      <app-search-modal
+        [title]="'Buscar Pieza'"
+        [placeholder]="'Buscar por nombre...'"
+        [items]="piezaSearchItems()"
+        [selectedId]="null"
+        [isOpen]="showPiezaModal()"
+        (itemSelected)="onPiezaSelected($event)"
+        (closed)="showPiezaModal.set(false)">
+      </app-search-modal>
     </div>
 
     <!-- Plantilla utilizada únicamente al imprimir/guardar como PDF -->
@@ -267,7 +307,7 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
         <div><strong>FECHA DE CIRUGÍA:</strong> {{ formatPrintDate(form.fecha_cirugia) }}</div>
         <div><strong>No. REMISIÓN:</strong> {{ form.num_remision || '—' }}</div>
         <div><strong>No. CASO:</strong> {{ form.num_caso || '—' }}</div>
-        <div><strong>SET INSTRUMENTAL:</strong> {{ form.set_instrumental || '—' }}</div>
+        <div><strong>EQUIPO:</strong> {{ form.set_instrumental || '—' }}</div>
         <div><strong>SERIAL:</strong> {{ form.serial || '—' }}</div>
         <div><strong>PIEZA REPORTADA:</strong> {{ form.pieza_reportada || '—' }}</div>
         <div><strong>REFERENCIA:</strong> {{ form.referencia || '—' }}</div>
@@ -442,6 +482,63 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
       font-size: 0.875rem;
       font-weight: 500;
       color: #374151;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .search-field-input {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.375rem;
+      background: #fff;
+      color: #374151;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .search-field-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .readonly-input {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.375rem;
+      background: #f9fafb;
+      color: #6b7280;
+      font-family: inherit;
+    }
+
+    .search-btn {
+      padding: 0.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.375rem;
+      background: #fff;
+      color: #6b7280;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .search-btn:hover:not(:disabled) {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .search-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     input, select, textarea {
@@ -750,6 +847,8 @@ export class NovedadesCXComponent implements OnInit {
   selectedNovedad = signal<NovedadCX | null>(null);
   showDeleteModal = signal(false);
   showEmptyState = signal(true);
+  showSerialModal = signal(false);
+  showPiezaModal = signal(false);
   searchTerm = signal('');
 
   evidenciaUrl = signal('');
@@ -769,6 +868,22 @@ export class NovedadesCXComponent implements OnInit {
   });
 
   isEditing = computed(() => this.selectedNovedad() !== null);
+
+  serialSearchItems = computed<SearchItem[]>(() => {
+    return this.service.setsInstrumentales().map(s => ({
+      id: s.serial,
+      label: `${s.serial} - ${s.nombre}`,
+      sublabel: s.serial
+    }));
+  });
+
+  piezaSearchItems = computed<SearchItem[]>(() => {
+    return this.service.setPiezas().map(p => ({
+      id: p.id,
+      label: p.nombre,
+      sublabel: `Ref: ${p.referencia}`
+    }));
+  });
 
   estadoGestionLabel = computed(() => {
     const novedad = this.selectedNovedad();
@@ -825,7 +940,48 @@ export class NovedadesCXComponent implements OnInit {
       this.errors.set({});
       void this.loadEvidenciaUrl(novedad.fotografia_evidencia);
       void this.loadRealizadoInfo(novedad.realizado_por);
+      if (novedad.serial) {
+        const set = this.service.setsInstrumentales().find(s => s.serial === novedad.serial);
+        if (set) {
+          this.service.loadSetPiezas(set.id);
+        }
+      }
     }
+  }
+
+  serialDisplay(): string {
+    if (!this.form.serial) return '';
+    return this.form.set_instrumental
+      ? `${this.form.serial} - ${this.form.set_instrumental}`
+      : this.form.serial;
+  }
+
+  openSerialModal(): void {
+    this.showSerialModal.set(true);
+  }
+
+  onSerialSelected(item: SearchItem): void {
+    this.form.serial = item.id as string;
+    this.form.pieza_reportada = '';
+    this.form.referencia = '';
+    const set = this.service.setsInstrumentales().find(s => s.serial === item.id);
+    this.form.set_instrumental = set?.nombre || '';
+    if (set) {
+      this.service.loadSetPiezas(set.id);
+    }
+    this.showSerialModal.set(false);
+  }
+
+  openPiezaModal(): void {
+    if (!this.form.serial) return;
+    this.showPiezaModal.set(true);
+  }
+
+  onPiezaSelected(item: SearchItem): void {
+    const pieza = this.service.setPiezas().find(p => p.id === item.id);
+    this.form.pieza_reportada = pieza?.nombre || String(item.id);
+    this.form.referencia = pieza?.referencia || '';
+    this.showPiezaModal.set(false);
   }
 
   private fromReporte(novedad: NovedadCX): NovedadCXForm {
@@ -904,9 +1060,6 @@ export class NovedadesCXComponent implements OnInit {
     }
     if (!this.form.num_remision.trim()) {
       errs['num_remision'] = 'El número de remisión es requerido';
-    }
-    if (!this.form.set_instrumental.trim()) {
-      errs['set_instrumental'] = 'El set instrumental es requerido';
     }
     if (!this.form.serial.trim()) {
       errs['serial'] = 'El serial es requerido';
