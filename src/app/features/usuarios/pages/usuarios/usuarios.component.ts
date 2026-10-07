@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../../../core/services/supabase.service';
 import { SignatureUploadComponent } from '../../../profile/components/signature-upload/signature-upload.component';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { lucideUsers } from '@ng-icons/lucide';
+import { lucideBuilding2, lucideUsers } from '@ng-icons/lucide';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 
 interface AppUser {
@@ -16,11 +16,17 @@ interface AppUser {
   created_at: string;
 }
 
+interface Provider {
+  id: string;
+  nombre: string;
+  estado: string;
+}
+
 @Component({
   selector: 'app-usuarios',
   standalone: true,
   imports: [CommonModule, FormsModule, SignatureUploadComponent, NgIconComponent],
-  providers: [provideIcons({ lucideUsers })],
+  providers: [provideIcons({ lucideUsers, lucideBuilding2 })],
   template: `
     <div class="usuarios-page">
       <header class="page-header">
@@ -99,6 +105,42 @@ interface AppUser {
               <p>Seleccione un usuario para ver sus detalles</p>
             </div>
           }
+
+          <div class="providers-card">
+            <div class="providers-header">
+              <ng-icon name="lucideBuilding2"></ng-icon>
+              <div>
+                <h2>Proveedores</h2>
+                <p>Gestione las firmas de proveedores externos</p>
+              </div>
+            </div>
+
+            <div class="provider-list">
+              @for (provider of providers(); track provider.id) {
+                <button
+                  type="button"
+                  class="provider-pill"
+                  [class.active]="selectedProvider()?.id === provider.id"
+                  (click)="selectProvider(provider)"
+                >
+                  {{ provider.nombre }}
+                </button>
+              } @empty {
+                <span class="empty-list">No hay proveedores</span>
+              }
+            </div>
+
+            @if (selectedProvider()) {
+              <div class="signature-section provider-signature-section">
+                <h3>Firma de {{ selectedProvider()!.nombre }}</h3>
+                <div class="signature-box">
+                  <app-signature-upload
+                    [providerId]="selectedProvider()!.id"
+                  ></app-signature-upload>
+                </div>
+              </div>
+            }
+          </div>
         </main>
       </div>
     </div>
@@ -416,13 +458,73 @@ interface AppUser {
       font-size: 0.75rem;
       text-transform: capitalize;
     }
+
+    .providers-card {
+      margin-top: 1.5rem;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+    }
+
+    .providers-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      color: #2563eb;
+    }
+
+    .providers-header h2 {
+      margin: 0;
+      color: #111827;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .providers-header p {
+      margin: 0.25rem 0 0;
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .provider-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .provider-pill {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 9999px;
+      background: #fff;
+      color: #374151;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .provider-pill:hover,
+    .provider-pill.active {
+      border-color: #3b82f6;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .provider-signature-section {
+      margin-top: 1rem;
+    }
   `]
 })
 export class UsuariosComponent implements OnInit {
   private supabase = inject(SupabaseService);
 
   users = signal<AppUser[]>([]);
+  providers = signal<Provider[]>([]);
   selectedUser = signal<AppUser | null>(null);
+  selectedProvider = signal<Provider | null>(null);
   searchTerm = '';
 
   filteredUsers = computed(() => {
@@ -436,6 +538,7 @@ export class UsuariosComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUsers();
+    this.loadProviders();
   }
 
   async loadUsers(): Promise<void> {
@@ -451,6 +554,23 @@ export class UsuariosComponent implements OnInit {
 
   async selectUser(user: AppUser): Promise<void> {
     this.selectedUser.set(user);
+  }
+
+  async loadProviders(): Promise<void> {
+    const { data, error } = await this.supabase.getClient()
+      .from('proveedores')
+      .select('id, nombre, estado')
+      .eq('estado', 'active')
+      .order('nombre');
+
+    if (!error && data) {
+      this.providers.set(data);
+      this.selectedProvider.set(data[0] || null);
+    }
+  }
+
+  selectProvider(provider: Provider): void {
+    this.selectedProvider.set(provider);
   }
 
   onSearch(): void {

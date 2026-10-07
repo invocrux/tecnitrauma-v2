@@ -161,6 +161,7 @@ export class SignatureUploadComponent {
   service = inject(ProfileService);
 
   userId = input<string | null>(null);
+  providerId = input<string | null>(null);
   signatureUploaded = output<{ id: string; user_id: string; firma_url: string }>();
 
   previewUrl = signal<string>('');
@@ -174,21 +175,24 @@ export class SignatureUploadComponent {
   constructor() {
     effect(() => {
       const userId = this.userId();
-      void this.loadCurrentSignature(userId);
+      const providerId = this.providerId();
+      void this.loadCurrentSignature(userId, providerId);
     });
   }
 
-  private async loadCurrentSignature(targetUserId: string | null): Promise<void> {
+  private async loadCurrentSignature(targetUserId: string | null, providerId: string | null): Promise<void> {
     const session = this.service['supabase'].session();
     const userId = targetUserId || session?.user?.id;
-    if (!userId) return;
+    if (!userId && !providerId) return;
 
     const requestId = ++this.signatureRequestId;
     this.hasSignature.set(false);
     this.currentSignatureUrl.set('');
     this.previewUrl.set('');
 
-    const signature = await this.service.getUserSignature(userId);
+    const signature = providerId
+      ? await this.service.getProviderSignature(providerId)
+      : await this.service.getUserSignature(userId!);
     if (requestId !== this.signatureRequestId) return;
 
     if (signature?.firma_url) {
@@ -253,19 +257,24 @@ export class SignatureUploadComponent {
 
     try {
       const targetUserId = this.userId();
+      const providerId = this.providerId();
       const session = this.service['supabase'].session();
       const userId = targetUserId || session?.user?.id;
-      if (!userId) return;
+      if (!userId && !providerId) return;
 
-      const url = await this.service.uploadSignature(file, userId);
-      const success = await this.service.saveUserSignature(url, userId);
+      const url = providerId
+        ? await this.service.uploadProviderSignature(file, providerId)
+        : await this.service.uploadSignature(file, userId!);
+      const success = providerId
+        ? await this.service.saveProviderSignature(url, providerId)
+        : await this.service.saveUserSignature(url, userId!);
       if (success) {
         this.hasSignature.set(true);
         this.currentSignatureUrl.set(url);
         this.selectedFile.set(null);
         this.previewUrl.set('');
-        const signature = await this.service.getUserSignature(userId);
-        if (signature) {
+        const signature = providerId ? null : await this.service.getUserSignature(userId!);
+        if (signature && !providerId) {
           this.signatureUploaded.emit(signature);
         }
       }
