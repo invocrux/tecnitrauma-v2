@@ -144,6 +144,17 @@ export class ProfileService {
     return data || null;
   }
 
+  async getProviderSignatureByName(providerName: string): Promise<ProviderSignature | null> {
+    const { data: provider, error } = await this.supabase.getClient()
+      .from('proveedores')
+      .select('id')
+      .ilike('nombre', providerName)
+      .maybeSingle();
+
+    if (error || !provider) return null;
+    return this.getProviderSignature(provider.id);
+  }
+
   async getUserSignature(userId: string): Promise<UserSignature | null> {
     if (this.signatures().has(userId)) {
       return this.signatures().get(userId) || null;

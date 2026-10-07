@@ -238,25 +238,23 @@ import type { MantenimientoReporte } from '../../utils/interface';
           <!-- Sección Firmas -->
           <section class="form-section">
             <h2 class="section-title">Firmas</h2>
-            <div class="signatures-row" [class.single]="!isTecnitrauma()">
-              @if (isTecnitrauma()) {
-                <div class="signature-box">
-                  <label>Realizado por</label>
-                  <div class="signature-display">
-                    @if (realizadoSignatureUrl()) {
-                      <img [src]="realizadoSignatureUrl()" alt="Firma realizado" />
-                    } @else {
-                      <span class="signature-placeholder">Sin firma - Subir desde Perfil</span>
-                    }
-                    <span class="signature-name">{{ realizadoName() }}</span>
-                  </div>
-                </div>
-              }
+            <div class="signatures-row">
               <div class="signature-box">
-                <label>Supervisado por</label>
+                <label>Proveedor</label>
+                <div class="signature-display">
+                  @if (providerSignatureUrl()) {
+                    <img [src]="providerSignatureUrl()" alt="Firma proveedor" />
+                  } @else {
+                    <span class="signature-placeholder">Sin firma - Subir desde Usuarios &gt; Proveedores</span>
+                  }
+                  <span class="signature-name">{{ providerName() }}</span>
+                </div>
+              </div>
+              <div class="signature-box">
+                <label>Responsable de solicitud</label>
                 <div class="signature-display">
                   @if (supervisorSignatureUrl()) {
-                    <img [src]="supervisorSignatureUrl()" alt="Firma supervisor" />
+                    <img [src]="supervisorSignatureUrl()" alt="Firma responsable" />
                   } @else {
                     <span class="signature-placeholder">Sin firma - Subir desde Perfil</span>
                   }
@@ -328,23 +326,21 @@ import type { MantenimientoReporte } from '../../utils/interface';
       <div class="print-text-block print-observations">{{ form.get('observaciones')?.value || ' ' }}</div>
 
       <div class="print-signatures">
-        @if (isTecnitrauma()) {
-          <div class="print-signature-cell">
-            <strong>REALIZADO POR:</strong>
-            <div class="print-signature-image">
-              @if (realizadoSignatureUrl()) {
-                <img [src]="realizadoSignatureUrl()" alt="Firma de quien realiza" />
-              }
-            </div>
-            <div><strong>NOMBRE Y CARGO:</strong> {{ realizadoPrintName() || ' ' }}</div>
-            <div><strong>FECHA:</strong> {{ formatPrintDate(form.get('fecha_mantenimiento')?.value) }}</div>
-          </div>
-        }
         <div class="print-signature-cell">
-          <strong>SUPERVISADO POR:</strong>
+          <strong>PROVEEDOR:</strong>
+          <div class="print-signature-image">
+            @if (providerSignatureUrl()) {
+              <img [src]="providerSignatureUrl()" alt="Firma del proveedor" />
+            }
+          </div>
+          <div><strong>NOMBRE Y CARGO:</strong> {{ providerName() || ' ' }}</div>
+          <div><strong>FECHA:</strong> {{ formatPrintDate(form.get('fecha_mantenimiento')?.value) }}</div>
+        </div>
+        <div class="print-signature-cell">
+          <strong>RESPONSABLE DE SOLICITUD:</strong>
           <div class="print-signature-image">
             @if (supervisorSignatureUrl()) {
-              <img [src]="supervisorSignatureUrl()" alt="Firma del supervisor" />
+              <img [src]="supervisorSignatureUrl()" alt="Firma del responsable" />
             }
           </div>
           <div><strong>NOMBRE Y CARGO:</strong> {{ supervisorName() || ' ' }}</div>
@@ -944,11 +940,14 @@ export class MantenimientoComponent implements OnInit {
 
   supervisorSignatureUrl = signal('');
   realizadoSignatureUrl = signal('');
+  providerSignatureUrl = signal('');
   supervisorName = signal('');
   realizadoName = signal('');
+  providerName = signal('');
   novedadRemision = signal('');
   private realizadoLoadId = 0;
   private supervisorLoadId = 0;
+  private providerLoadId = 0;
 
   reportesList = computed<ReportListItem[]>(() => {
     return this.service.reportes().map(r => ({
@@ -1070,7 +1069,10 @@ ngOnInit(): void {
     this.form = this.createForm();
     this.form.get('marca_id')?.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.syncRealizadoPorWithMarca());
+      .subscribe(marcaId => {
+        this.syncRealizadoPorWithMarca();
+        void this.loadProviderSignature(Number(marcaId));
+      });
     this.form.get('realizado_por')?.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(userId => this.loadSignature('realizado', userId));
@@ -1114,6 +1116,21 @@ ngOnInit(): void {
       this.supervisorSignatureUrl.set(url);
       this.supervisorName.set(name);
     }
+  }
+
+  private async loadProviderSignature(marcaId: number | null): Promise<void> {
+    const loadId = ++this.providerLoadId;
+    this.providerSignatureUrl.set('');
+    this.providerName.set('');
+
+    if (!marcaId) return;
+    const marca = this.service.marcas().find(item => item.id === marcaId);
+    if (!marca) return;
+
+    this.providerName.set(marca.nombre);
+    const signature = await this.profileService.getProviderSignatureByName(marca.nombre);
+    if (loadId !== this.providerLoadId) return;
+    this.providerSignatureUrl.set(signature?.firma_url || '');
   }
 
   onSignatureUserChange(type: 'realizado' | 'supervisor', userId: string): void {
@@ -1166,6 +1183,7 @@ ngOnInit(): void {
     }
     this.loadSignature('realizado', reporte.realizado_por);
     this.loadSignature('supervisor', reporte.supervisado_por);
+    this.loadProviderSignature(reporte.marca_id);
   }
 
   private resetValidationState(): void {
@@ -1238,8 +1256,10 @@ ngOnInit(): void {
     this.formChangeTrigger.update(v => v + 1);
     this.supervisorSignatureUrl.set('');
     this.realizadoSignatureUrl.set('');
+    this.providerSignatureUrl.set('');
     this.supervisorName.set('');
     this.realizadoName.set('');
+    this.providerName.set('');
   }
 
   onDelete(): void {
