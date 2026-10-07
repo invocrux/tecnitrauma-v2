@@ -67,9 +67,6 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
                 <div class="form-field">
                   <label for="numCaso">Número de Caso</label>
                   <input id="numCaso" type="text" [(ngModel)]="form.num_caso" name="num_caso" placeholder="CASE-001" />
-                  @if (errors()['num_caso']) {
-                    <span class="field-error">{{ errors()['num_caso'] }}</span>
-                  }
                 </div>
 
                 <div class="form-field">
@@ -907,9 +904,6 @@ export class NovedadesCXComponent implements OnInit {
     }
     if (!this.form.num_remision.trim()) {
       errs['num_remision'] = 'El número de remisión es requerido';
-    }
-    if (!this.form.num_caso.trim()) {
-      errs['num_caso'] = 'El número de caso es requerido';
     }
     if (!this.form.set_instrumental.trim()) {
       errs['set_instrumental'] = 'El set instrumental es requerido';
