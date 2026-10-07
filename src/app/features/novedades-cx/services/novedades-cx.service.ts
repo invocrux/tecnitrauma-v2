@@ -253,7 +253,13 @@ export class NovedadesCXService {
       return false;
     }
 
+    await client
+      .from('novedades_cx')
+      .update({ estado: 'enviado_mantenimiento' })
+      .eq('id', novedadId);
+
     this.toast.success('Novedad enviada a mantenimiento correctamente');
+    await this.loadNovedades();
     return true;
   }
 

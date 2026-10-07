@@ -11,6 +11,7 @@ export interface ReportListItem {
   estado: string;
   tipo?: string | null;
   fecha?: string;
+  enviadoMantenimiento?: boolean;
   [key: string]: unknown;
 }
 
@@ -49,6 +50,9 @@ export interface ReportListItem {
               <div class="card-header">
                 <span class="card-primary">{{ item.num_remision || item.serial || '—' }}</span>
                 <span class="badge" [class]="'badge-' + item.estado">{{ item.estado }}</span>
+                @if (item.enviadoMantenimiento) {
+                  <span class="badge badge-enviado-mantenimiento">enviado a mantenimiento</span>
+                }
               </div>
               @if (item.tipo || item.fecha) {
                 <div class="card-content">
@@ -169,7 +173,18 @@ export interface ReportListItem {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
       margin-bottom: 0.25rem;
+    }
+
+    .card-header .card-primary {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .card-header .badge {
+      flex: 0 0 auto;
     }
 
     .card-primary {
@@ -209,6 +224,7 @@ export interface ReportListItem {
     .badge-en_proceso { background: #dbeafe; color: #1d4ed8; }
     .badge-cerrada { background: #dcfce7; color: #15803d; }
     .badge-sin_gestion { background: #e2e8f0; color: #475569; }
+    .badge-enviado-mantenimiento { background: #ede9fe; color: #6d28d9; }
   `]
 })
 export class ReportListPanelComponent {

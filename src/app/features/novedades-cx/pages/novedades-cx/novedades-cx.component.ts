@@ -885,7 +885,8 @@ export class NovedadesCXComponent implements OnInit {
       serial: n.serial,
       estado: n.estado_gestion,
       tipo: n.tipo_falla as any,
-      fecha: n.fecha_cirugia
+      fecha: n.fecha_cirugia,
+      enviadoMantenimiento: n.estado === 'enviado_mantenimiento'
     }));
   });
 
@@ -909,7 +910,9 @@ export class NovedadesCXComponent implements OnInit {
 
   estadoGestionLabel = computed(() => {
     const novedad = this.selectedNovedad();
-    return novedad ? this.service.getEstadoGestionLabel(novedad.estado_gestion) : 'Nueva novedad';
+    if (!novedad) return 'Nueva novedad';
+    const label = this.service.getEstadoGestionLabel(novedad.estado_gestion);
+    return novedad.estado === 'enviado_mantenimiento' ? `${label} · Enviada a mantenimiento` : label;
   });
 
   ngOnInit(): void {
