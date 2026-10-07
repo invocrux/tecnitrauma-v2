@@ -302,15 +302,7 @@ export class NovedadesCXService {
   }
 
   getTipoFallaLabel(tipo: string | null): string {
-    const labels: Record<string, string> = {
-      'mecanica': 'Mecánica',
-      'electrica': 'Eléctrica',
-      'software': 'Software',
-      'material': 'Material',
-      'uso_inadecuado': 'Uso Inadecuado',
-      'otra': 'Otra'
-    };
-    return tipo ? (labels[tipo] || tipo) : '';
+    return tipo || '';
   }
 
   getEstadoGestionLabel(estado: string): string {

@@ -197,15 +197,19 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
 
                 <div class="form-field">
                   <label for="tipoFalla">Tipo de Falla</label>
-                  <select id="tipoFalla" [(ngModel)]="form.tipo_falla" name="tipo_falla">
+                  <select id="tipoFalla" [ngModel]="tipoFallaSelectValue()" (ngModelChange)="onTipoFallaChange($event)" name="tipo_falla">
                     <option [ngValue]="null">Seleccionar...</option>
-                    <option value="mecanica">Mecánica</option>
-                    <option value="electrica">Eléctrica</option>
-                    <option value="software">Software</option>
-                    <option value="material">Material</option>
-                    <option value="uso_inadecuado">Uso Inadecuado</option>
-                    <option value="otra">Otra</option>
+                    @for (option of tipoFallaOptions; track option) {
+                      <option [value]="option">{{ option }}</option>
+                    }
+                    <option value="__otro__">Otro</option>
                   </select>
+                  @if (tipoFallaSelectValue() === '__otro__') {
+                    <input type="text" [(ngModel)]="tipoFallaOtro" name="tipo_falla_otro" placeholder="Escriba el tipo de falla" />
+                    @if (errors()['tipo_falla_otro']) {
+                      <span class="field-error">{{ errors()['tipo_falla_otro'] }}</span>
+                    }
+                  }
                 </div>
 
                 <div class="form-field full-width">
@@ -878,6 +882,22 @@ export class NovedadesCXComponent implements OnInit {
   realizadoSignatureUrl = signal('');
   private realizadoLoadId = 0;
 
+  readonly tipoFallaOptions = [
+    'Instrumental incompleto',
+    'Instrumental deteriorado',
+    'Equipo no disponible',
+    'Equipo con falla',
+    'Pieza faltante',
+    'Referencia incorrecta',
+    'Equipo incorrecto',
+    'Accesorio faltante',
+    'Daño durante cirugía',
+    'Problema de funcionamiento',
+    'Avería',
+    'Problema de limpieza/condición'
+  ];
+  tipoFallaOtro = '';
+
   novedadesList = computed<ReportListItem[]>(() => {
     return this.service.novedades().map(n => ({
       id: n.id!,
@@ -956,6 +976,7 @@ export class NovedadesCXComponent implements OnInit {
     this.evidenciaUrl.set('');
     this.realizadoName.set('');
     this.realizadoSignatureUrl.set('');
+    this.tipoFallaOtro = '';
   }
 
   onSelect(item: ReportListItem): void {
@@ -964,6 +985,7 @@ export class NovedadesCXComponent implements OnInit {
       this.selectedNovedad.set(novedad);
       this.showEmptyState.set(false);
       this.form = this.fromReporte(novedad);
+      this.setupTipoFallaFromStored(novedad.tipo_falla);
       this.errors.set({});
       void this.loadEvidenciaUrl(novedad.fotografia_evidencia);
       void this.loadRealizadoInfo(novedad.realizado_por);
@@ -974,6 +996,36 @@ export class NovedadesCXComponent implements OnInit {
         }
       }
     }
+  }
+
+  tipoFallaSelectValue(): string | null {
+    const value = this.form.tipo_falla;
+    if (!value) return null;
+    return this.tipoFallaOptions.includes(value) ? value : '__otro__';
+  }
+
+  onTipoFallaChange(value: string | null): void {
+    this.form.tipo_falla = value;
+    if (value !== '__otro__') {
+      this.tipoFallaOtro = '';
+    }
+  }
+
+  private setupTipoFallaFromStored(value: string | null): void {
+    if (value && !this.tipoFallaOptions.includes(value)) {
+      this.form.tipo_falla = '__otro__';
+      this.tipoFallaOtro = value;
+      return;
+    }
+    this.form.tipo_falla = value;
+    this.tipoFallaOtro = '';
+  }
+
+  private tipoFallaValueForSave(): string | null {
+    if (this.form.tipo_falla === '__otro__') {
+      return this.tipoFallaOtro.trim() || null;
+    }
+    return this.form.tipo_falla;
   }
 
   serialDisplay(): string {
@@ -1105,6 +1157,9 @@ export class NovedadesCXComponent implements OnInit {
     if (!this.form.descripcion_novedad.trim()) {
       errs['descripcion_novedad'] = 'La descripción de la novedad es requerida';
     }
+    if (this.form.tipo_falla === '__otro__' && !this.tipoFallaOtro.trim()) {
+      errs['tipo_falla_otro'] = 'Escriba el tipo de falla';
+    }
 
     this.errors.set(errs);
     return Object.keys(errs).length === 0;
@@ -1117,7 +1172,10 @@ export class NovedadesCXComponent implements OnInit {
     }
 
     const id = this.selectedNovedad()?.id;
-    const success = await this.service.guardar(this.form, id);
+    const success = await this.service.guardar({
+      ...this.form,
+      tipo_falla: this.tipoFallaValueForSave()
+    }, id);
     if (success) {
       this.onNuevo();
     }
@@ -1152,7 +1210,8 @@ export class NovedadesCXComponent implements OnInit {
   }
 
   tipoFallaPrintLabel(): string {
-    return this.form.tipo_falla ? this.service.getTipoFallaLabel(this.form.tipo_falla) : '—';
+    const value = this.tipoFallaValueForSave();
+    return value ? this.service.getTipoFallaLabel(value) : '—';
   }
 
   estadoGestionPrintLabel(): string {

@@ -1,5 +1,5 @@
 export type EstadoGestion = 'abierta' | 'en_proceso' | 'cerrada' | 'sin_gestion';
-export type TipoFalla = 'mecanica' | 'electrica' | 'software' | 'material' | 'uso_inadecuado' | 'otra';
+export type TipoFalla = string;
 
 export interface NovedadCX {
   id?: string;
