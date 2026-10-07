@@ -111,7 +111,7 @@ export class MantenimientoService {
 
     const { data, error } = await this.supabase.getClient()
       .from('mantenimiento_reportes')
-      .select('id, tipo, num_remision, marca_id, equipo_id, serial, pieza, referencia, fecha, fecha_mantenimiento, realizado_por, supervisado_por, motivo, descripcion, observaciones, estado, created_at, updated_at, created_by')
+      .select('id, tipo, num_remision, marca_id, equipo_id, serial, pieza, referencia, fecha, fecha_mantenimiento, realizado_por, supervisado_por, motivo, descripcion, observaciones, estado, novedad_id, created_at, updated_at, created_by')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -194,5 +194,16 @@ export class MantenimientoService {
 
   getTodayDate(): string {
     return new Date().toISOString().split('T')[0];
+  }
+
+  async getNovedadRemision(novedadId: string): Promise<string> {
+    const { data, error } = await this.supabase.getClient()
+      .from('novedades_cx')
+      .select('num_remision')
+      .eq('id', novedadId)
+      .maybeSingle();
+
+    if (error || !data) return '';
+    return data.num_remision || '';
   }
 }

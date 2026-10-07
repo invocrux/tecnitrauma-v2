@@ -1,5 +1,5 @@
 export type TipoMantenimiento = 'correctivo' | 'predictivo' | 'preventivo';
-export type EstadoReporte = 'borrador' | 'enviado' | 'completado';
+export type EstadoReporte = 'borrador' | 'enviado' | 'completado' | 'pendiente';
 
 export interface MantenimientoReporte {
   id?: string;
@@ -18,6 +18,7 @@ export interface MantenimientoReporte {
   descripcion: string;
   observaciones: string;
   estado: EstadoReporte;
+  novedad_id?: string | null;
   created_at?: string;
   updated_at?: string;
   created_by?: string;

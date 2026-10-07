@@ -182,6 +182,81 @@ export class NovedadesCXService {
     return true;
   }
 
+  async enviarAMantenimiento(novedadId: string): Promise<boolean> {
+    this.isLoading.set(true);
+    const client = this.supabase.getClient();
+
+    const { data: novedad, error: novedadError } = await client
+      .from('novedades_cx')
+      .select('*')
+      .eq('id', novedadId)
+      .maybeSingle();
+
+    if (novedadError || !novedad) {
+      this.isLoading.set(false);
+      this.toast.error('No se encontró la novedad');
+      return false;
+    }
+
+    const { data: yaEnviado } = await client
+      .from('mantenimiento_reportes')
+      .select('id')
+      .eq('novedad_id', novedadId)
+      .maybeSingle();
+
+    if (yaEnviado) {
+      this.isLoading.set(false);
+      this.toast.error('Esta novedad ya fue enviada a mantenimiento');
+      return false;
+    }
+
+    const { data: marcas } = await client
+      .from('marcas')
+      .select('id, nombre');
+    const marca = (marcas || []).find(m => m.nombre.toLowerCase() === (novedad.proveedor || '').toLowerCase());
+
+    const { data: piezas } = await client
+      .from('set_piezas')
+      .select('id, nombre, referencia');
+    const pieza = (piezas || []).find(p => p.referencia === novedad.referencia && p.nombre === novedad.pieza_reportada)
+      || (piezas || []).find(p => p.nombre === novedad.pieza_reportada);
+
+    const { data: remision } = await client.rpc('generar_remision');
+
+    const session = this.supabase.session();
+    const { error } = await client
+      .from('mantenimiento_reportes')
+      .insert({
+        tipo: 'correctivo',
+        num_remision: remision || novedad.num_remision,
+        marca_id: marca?.id ?? null,
+        equipo_id: null,
+        serial: novedad.serial,
+        pieza: pieza ? String(pieza.id) : novedad.pieza_reportada,
+        referencia: novedad.referencia,
+        fecha: this.getTodayDate(),
+        fecha_mantenimiento: null,
+        realizado_por: novedad.realizado_por,
+        supervisado_por: null,
+        motivo: novedad.descripcion_novedad,
+        descripcion: novedad.descripcion_accion || '',
+        observaciones: novedad.observaciones || '',
+        estado: 'pendiente',
+        novedad_id: novedadId,
+        created_by: session?.user?.id
+      });
+
+    this.isLoading.set(false);
+
+    if (error) {
+      this.toast.error('Error al enviar a mantenimiento: ' + error.message);
+      return false;
+    }
+
+    this.toast.success('Novedad enviada a mantenimiento correctamente');
+    return true;
+  }
+
   async uploadEvidencia(file: File): Promise<{ path: string; url: string } | null> {
     const ext = file.name.split('.').pop() || 'png';
     const path = `novedades/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;

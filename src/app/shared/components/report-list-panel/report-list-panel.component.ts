@@ -204,6 +204,11 @@ export interface ReportListItem {
     .badge-borrador { background: #e2e8f0; color: #475569; }
     .badge-enviado { background: #dbeafe; color: #1d4ed8; }
     .badge-completado { background: #dcfce7; color: #15803d; }
+    .badge-pendiente { background: #fef3c7; color: #b45309; }
+    .badge-abierta { background: #fef3c7; color: #b45309; }
+    .badge-en_proceso { background: #dbeafe; color: #1d4ed8; }
+    .badge-cerrada { background: #dcfce7; color: #15803d; }
+    .badge-sin_gestion { background: #e2e8f0; color: #475569; }
   `]
 })
 export class ReportListPanelComponent {

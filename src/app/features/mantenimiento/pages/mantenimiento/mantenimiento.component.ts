@@ -51,6 +51,12 @@ import type { MantenimientoReporte } from '../../utils/interface';
           </div>
         } @else {
           <form class="card-body" [formGroup]="form" (ngSubmit)="onSubmit()">
+          @if (novedadRemision()) {
+            <div class="novedad-banner">
+              <ng-icon name="lucideWrench"></ng-icon>
+              Este reporte viene de la novedad #{{ novedadRemision() }}
+            </div>
+          }
           <!-- Sección 1: Identificación -->
           <section class="form-section">
             <h2 class="section-title">INFORMACIÓN GENERAL</h2>
@@ -903,6 +909,20 @@ import type { MantenimientoReporte } from '../../utils/interface';
       margin: 0;
       line-height: 1.6;
     }
+
+    .novedad-banner {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid #bfdbfe;
+      border-radius: 0.5rem;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
   `]
 })
 export class MantenimientoComponent implements OnInit {
@@ -926,6 +946,7 @@ export class MantenimientoComponent implements OnInit {
   realizadoSignatureUrl = signal('');
   supervisorName = signal('');
   realizadoName = signal('');
+  novedadRemision = signal('');
   private realizadoLoadId = 0;
   private supervisorLoadId = 0;
 
@@ -1119,6 +1140,7 @@ ngOnInit(): void {
     if (!reporte) return;
     this.selectedReporte.set(reporte);
     this.showEmptyState.set(false);
+    this.loadNovedadRemision(reporte);
     this.form.patchValue({
       tipo: reporte.tipo,
       num_remision: reporte.num_remision,
@@ -1156,6 +1178,13 @@ ngOnInit(): void {
     this.form.markAsPristine();
   }
 
+  private async loadNovedadRemision(reporte: MantenimientoReporte): Promise<void> {
+    this.novedadRemision.set('');
+    if (!reporte.novedad_id) return;
+    const remision = await this.service.getNovedadRemision(reporte.novedad_id);
+    this.novedadRemision.set(remision);
+  }
+
   onSearch(term: string): void {
     this.searchTerm.set(term);
   }
@@ -1188,6 +1217,7 @@ ngOnInit(): void {
   onNuevo(): void {
     this.selectedReporte.set(null);
     this.showEmptyState.set(false);
+    this.novedadRemision.set('');
     this.form.get('realizado_por')?.enable({ emitEvent: false });
     this.form.reset({
       tipo: null,
@@ -1227,6 +1257,7 @@ ngOnInit(): void {
       this.showDeleteModal.set(false);
       this.selectedReporte.set(null);
       this.showEmptyState.set(true);
+      this.novedadRemision.set('');
       this.form.reset();
     }
   }

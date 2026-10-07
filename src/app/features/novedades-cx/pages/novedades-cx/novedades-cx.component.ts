@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { lucideAlertCircle, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideUpload, lucideX, lucideSearch } from '@ng-icons/lucide';
+import { lucideAlertCircle, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideUpload, lucideX, lucideSearch, lucideWrench } from '@ng-icons/lucide';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { ConfirmDeleteModalComponent } from '../../../../shared/components/confirm-delete-modal/confirm-delete-modal.component';
 import { ReportListPanelComponent, type ReportListItem } from '../../../../shared/components/report-list-panel/report-list-panel.component';
@@ -14,7 +14,7 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
 @Component({
   selector: 'app-novedades-cx',
   imports: [FormsModule, NgIconComponent, ButtonComponent, ConfirmDeleteModalComponent, ReportListPanelComponent, SearchModalComponent],
-  providers: [provideIcons({ lucideAlertCircle, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideUpload, lucideX, lucideSearch })],
+  providers: [provideIcons({ lucideAlertCircle, lucidePrinter, lucideSend, lucideSave, lucideTrash2, lucideUpload, lucideX, lucideSearch, lucideWrench })],
   template: `
     <div class="page-container">
       <app-report-list-panel
@@ -262,6 +262,12 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
                   <ng-icon name="lucidePrinter"></ng-icon>
                   Imprimir
                 </app-button>
+                @if (isEditing()) {
+                  <app-button variant="secondary" type="button" (clicked)="onEnviarAMantenimiento()" [loading]="service.isLoading()">
+                    <ng-icon name="lucideWrench"></ng-icon>
+                    Enviar a Mantenimiento
+                  </app-button>
+                }
                 <app-button variant="tertiary" type="button" (clicked)="onEnviar()">
                   <ng-icon name="lucideSend"></ng-icon>
                   Enviar
@@ -1170,5 +1176,14 @@ export class NovedadesCXComponent implements OnInit {
 
   onEnviar(): void {
     this.toast.info('Funcionalidad en desarrollo');
+  }
+
+  async onEnviarAMantenimiento(): Promise<void> {
+    const selected = this.selectedNovedad();
+    if (!selected?.id) {
+      this.toast.error('Primero guarda la novedad o selecciona una de la lista');
+      return;
+    }
+    await this.service.enviarAMantenimiento(selected.id);
   }
 }
