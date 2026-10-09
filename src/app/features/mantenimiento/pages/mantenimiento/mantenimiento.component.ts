@@ -240,14 +240,14 @@ import type { MantenimientoReporte } from '../../utils/interface';
             <h2 class="section-title">Firmas</h2>
             <div class="signatures-row">
               <div class="signature-box">
-                <label>Proveedor</label>
+                <label>{{ primarySignatureLabel() }}</label>
                 <div class="signature-display">
-                  @if (providerSignatureUrl()) {
-                    <img [src]="providerSignatureUrl()" alt="Firma proveedor" />
+                  @if (primarySignatureUrl()) {
+                    <img [src]="primarySignatureUrl()" alt="Firma principal" />
                   } @else {
-                    <span class="signature-placeholder">Sin firma - Subir desde Usuarios &gt; Proveedores</span>
+                    <span class="signature-placeholder">{{ primarySignaturePlaceholder() }}</span>
                   }
-                  <span class="signature-name">{{ providerName() }}</span>
+                  <span class="signature-name">{{ primarySignatureName() }}</span>
                 </div>
               </div>
               <div class="signature-box">
@@ -327,13 +327,13 @@ import type { MantenimientoReporte } from '../../utils/interface';
 
       <div class="print-signatures">
         <div class="print-signature-cell">
-          <strong>PROVEEDOR:</strong>
+          <strong>{{ primarySignatureLabel().toUpperCase() }}:</strong>
           <div class="print-signature-image">
-            @if (providerSignatureUrl()) {
-              <img [src]="providerSignatureUrl()" alt="Firma del proveedor" />
+            @if (primarySignatureUrl()) {
+              <img [src]="primarySignatureUrl()" alt="Firma principal" />
             }
           </div>
-          <div><strong>NOMBRE Y CARGO:</strong> {{ providerName() || ' ' }}</div>
+          <div><strong>NOMBRE Y CARGO:</strong> {{ primarySignatureName() || ' ' }}</div>
           <div><strong>FECHA:</strong> {{ formatPrintDate(form.get('fecha_mantenimiento')?.value) }}</div>
         </div>
         <div class="print-signature-cell">
@@ -1020,6 +1020,24 @@ export class MantenimientoComponent implements OnInit {
     if (!marcaId) return true;
     const marca = this.service.marcas().find(m => m.id === marcaId);
     return marca?.nombre?.toLowerCase().includes('tecnitrauma') ?? true;
+  });
+
+  primarySignatureUrl = computed(() => {
+    return this.isTecnitrauma() ? this.realizadoSignatureUrl() : this.providerSignatureUrl();
+  });
+
+  primarySignatureName = computed(() => {
+    return this.isTecnitrauma() ? this.realizadoName() : this.providerName();
+  });
+
+  primarySignatureLabel = computed(() => {
+    return this.isTecnitrauma() ? 'Realizado por' : 'Proveedor';
+  });
+
+  primarySignaturePlaceholder = computed(() => {
+    return this.isTecnitrauma()
+      ? 'Sin firma - Subir desde Perfil'
+      : 'Sin firma - Subir desde Usuarios > Proveedores';
   });
 
   externalProviderName = computed(() => {
