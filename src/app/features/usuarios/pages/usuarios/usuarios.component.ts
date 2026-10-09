@@ -963,11 +963,23 @@ export class UsuariosComponent implements OnInit {
       }
     });
 
-    const responseError = (error as { message?: string } | null)?.message
-      || (data as { error?: string } | null)?.error;
+    if (error || (data as { error?: string } | null)?.error) {
+      const status = (error as { context?: { status?: number } } | null)?.context?.status;
 
-    if (responseError) {
-      this.createError.set(responseError);
+      if (status === 403) {
+        this.createError.set('No tienes permiso para crear usuarios');
+      } else {
+        let fnMessage = (data as { error?: string } | null)?.error || '';
+        if (!fnMessage && (error as { context?: Response } | null)?.context) {
+          try {
+            const body = await (error as unknown as { context: Response }).context.json();
+            fnMessage = body?.error || '';
+          } catch {
+            fnMessage = '';
+          }
+        }
+        this.createError.set(fnMessage || 'Error al crear el usuario');
+      }
       this.creating.set(false);
       return;
     }
