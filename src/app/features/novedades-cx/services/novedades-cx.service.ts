@@ -129,6 +129,8 @@ export class NovedadesCXService {
       realizado_por: form.realizado_por,
       proveedor: form.proveedor,
       continua_mantenimiento: form.continua_mantenimiento,
+      cuarentena: form.cuarentena,
+      de_baja: form.de_baja,
       estado_gestion: form.estado_gestion,
       descripcion_novedad: form.descripcion_novedad,
       tipo_falla: form.tipo_falla ?? undefined,

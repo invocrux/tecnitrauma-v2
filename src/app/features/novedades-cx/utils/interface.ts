@@ -16,6 +16,8 @@ export interface NovedadCX {
   realizado_por: string | null;
   proveedor: string;
   continua_mantenimiento: boolean;
+  cuarentena: boolean;
+  de_baja: boolean;
   estado_gestion: EstadoGestion;
   descripcion_novedad: string;
   tipo_falla: TipoFalla | null;
@@ -42,6 +44,8 @@ export interface NovedadCXForm {
   realizado_por: string | null;
   proveedor: string;
   continua_mantenimiento: boolean;
+  cuarentena: boolean;
+  de_baja: boolean;
   estado_gestion: EstadoGestion;
   descripcion_novedad: string;
   tipo_falla: TipoFalla | null;

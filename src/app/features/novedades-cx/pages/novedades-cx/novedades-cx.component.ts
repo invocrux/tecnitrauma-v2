@@ -165,14 +165,6 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
                 </div>
 
                 <div class="form-field">
-                  <label for="continuaMantenimiento">¿Continúa en Mantenimiento Correctivo?</label>
-                  <select id="continuaMantenimiento" [(ngModel)]="form.continua_mantenimiento" name="continua_mantenimiento">
-                    <option [ngValue]="true">Sí</option>
-                    <option [ngValue]="false">No</option>
-                  </select>
-                </div>
-
-                <div class="form-field">
                   <label for="estadoGestion">Estado de Gestión</label>
                   <select id="estadoGestion" [(ngModel)]="form.estado_gestion" name="estado_gestion">
                     <option value="abierta">Abierta</option>
@@ -180,6 +172,32 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
                     <option value="cerrada">Cerrada</option>
                     <option value="sin_gestion">Sin Gestión</option>
                   </select>
+                </div>
+              </div>
+
+              <div class="toggles-grid">
+                <div class="toggle-field">
+                  <span>Cuarentena</span>
+                  <label class="switch">
+                    <input id="cuarentena" type="checkbox" [(ngModel)]="form.cuarentena" name="cuarentena" />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="toggle-field">
+                  <span>De baja</span>
+                  <label class="switch">
+                    <input id="deBaja" type="checkbox" [(ngModel)]="form.de_baja" name="de_baja" />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="toggle-field">
+                  <span>Mantenimiento correctivo</span>
+                  <label class="switch">
+                    <input id="mantenimientoCorrectivo" type="checkbox" [(ngModel)]="form.continua_mantenimiento" name="continua_mantenimiento" />
+                    <span class="slider"></span>
+                  </label>
                 </div>
               </div>
             </section>
@@ -349,7 +367,9 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
       <div class="print-section-title">GESTIÓN</div>
       <div class="print-grid">
         <div><strong>PROVEEDOR:</strong> {{ form.proveedor || '—' }}</div>
-        <div><strong>CONTINÚA EN MANTENIMIENTO:</strong> {{ form.continua_mantenimiento ? 'Sí' : 'No' }}</div>
+        <div><strong>CUARENTENA:</strong> {{ form.cuarentena ? 'Sí' : 'No' }}</div>
+        <div><strong>DE BAJA:</strong> {{ form.de_baja ? 'Sí' : 'No' }}</div>
+        <div><strong>MANTENIMIENTO CORRECTIVO:</strong> {{ form.continua_mantenimiento ? 'Sí' : 'No' }}</div>
       </div>
 
       @if (evidenciaUrl()) {
@@ -498,6 +518,74 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
 
     .form-field.full-width {
       grid-column: 1 / -1;
+    }
+
+    .toggles-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .toggle-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      background: #f9fafb;
+    }
+
+    .toggle-field span {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #cbd5e1;
+      border-radius: 9999px;
+      transition: background 0.2s;
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .switch input:checked + .slider {
+      background: #2563eb;
+    }
+
+    .switch input:checked + .slider:before {
+      transform: translateX(20px);
     }
 
     label {
@@ -955,6 +1043,8 @@ export class NovedadesCXComponent implements OnInit {
       realizado_por: null,
       proveedor: '',
       continua_mantenimiento: false,
+      cuarentena: false,
+      de_baja: false,
       estado_gestion: 'abierta',
       descripcion_novedad: '',
       tipo_falla: null,
@@ -1078,6 +1168,8 @@ export class NovedadesCXComponent implements OnInit {
       realizado_por: novedad.realizado_por,
       proveedor: novedad.proveedor,
       continua_mantenimiento: novedad.continua_mantenimiento,
+      cuarentena: novedad.cuarentena ?? false,
+      de_baja: novedad.de_baja ?? false,
       estado_gestion: novedad.estado_gestion,
       descripcion_novedad: novedad.descripcion_novedad,
       tipo_falla: novedad.tipo_falla,
