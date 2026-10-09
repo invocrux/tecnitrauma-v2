@@ -135,6 +135,11 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
                     <span class="field-error">{{ errors()['fecha_inspeccion'] }}</span>
                   }
                 </div>
+
+                <div class="form-field">
+                  <label for="soporteAsignado">Soporte asignado</label>
+                  <input id="soporteAsignado" type="text" [(ngModel)]="form.soporte_asignado" name="soporte_asignado" placeholder="Escriba el soporte asignado..." />
+                </div>
               </div>
             </section>
 
@@ -362,6 +367,7 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
         <div><strong>PIEZA REPORTADA:</strong> {{ form.pieza_reportada || '—' }}</div>
         <div><strong>REFERENCIA:</strong> {{ form.referencia || '—' }}</div>
         <div><strong>FECHA DE INSPECCIÓN:</strong> {{ formatPrintDate(form.fecha_inspeccion) }}</div>
+        <div><strong>SOPORTE ASIGNADO:</strong> {{ form.soporte_asignado || '—' }}</div>
       </div>
 
       <div class="print-section-title">DESCRIPCIÓN DE LA NOVEDAD</div>
@@ -1057,6 +1063,7 @@ export class NovedadesCXComponent implements OnInit {
       pieza_reportada: '',
       referencia: '',
       fecha_inspeccion: this.service.getTodayDate(),
+      soporte_asignado: '',
       realizado_por: null,
       supervisado_por: null,
       proveedor: '',
@@ -1186,6 +1193,7 @@ export class NovedadesCXComponent implements OnInit {
       pieza_reportada: novedad.pieza_reportada,
       referencia: novedad.referencia || '',
       fecha_inspeccion: novedad.fecha_inspeccion,
+      soporte_asignado: novedad.soporte_asignado || '',
       realizado_por: novedad.realizado_por,
       supervisado_por: novedad.supervisado_por ?? null,
       proveedor: novedad.proveedor,

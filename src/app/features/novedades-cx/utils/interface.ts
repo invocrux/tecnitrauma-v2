@@ -13,6 +13,7 @@ export interface NovedadCX {
   pieza_reportada: string;
   referencia: string;
   fecha_inspeccion: string;
+  soporte_asignado: string;
   realizado_por: string | null;
   supervisado_por: string | null;
   proveedor: string;
@@ -42,6 +43,7 @@ export interface NovedadCXForm {
   pieza_reportada: string;
   referencia: string;
   fecha_inspeccion: string;
+  soporte_asignado: string;
   realizado_por: string | null;
   supervisado_por: string | null;
   proveedor: string;

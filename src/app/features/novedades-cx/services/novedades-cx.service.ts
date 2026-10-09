@@ -126,6 +126,7 @@ export class NovedadesCXService {
       pieza_reportada: form.pieza_reportada,
       referencia: form.referencia || undefined,
       fecha_inspeccion: form.fecha_inspeccion,
+      soporte_asignado: form.soporte_asignado || undefined,
       realizado_por: form.realizado_por,
       supervisado_por: form.supervisado_por,
       proveedor: form.proveedor,
