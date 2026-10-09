@@ -166,6 +166,24 @@ import type { MantenimientoReporte } from '../../utils/interface';
               </div>
 
               <div class="form-row-2">
+                <div class="toggle-field">
+                  <span>Cuarentena</span>
+                  <label class="switch">
+                    <input id="cuarentena" type="checkbox" formControlName="cuarentena" />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+
+                <div class="toggle-field">
+                  <span>Dar de baja</span>
+                  <label class="switch">
+                    <input id="deBaja" type="checkbox" formControlName="de_baja" />
+                    <span class="slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-row-2">
                 <div class="form-field">
                   <label for="realizadoPor">Realizado por</label>
                   @if (isTecnitrauma()) {
@@ -314,6 +332,8 @@ import type { MantenimientoReporte } from '../../utils/interface';
         <div><strong>PIEZA:</strong> {{ selectedPiezaNombre() || '—' }}</div>
         <div><strong>REFERENCIA:</strong> {{ selectedPiezaReferencia() || '—' }}</div>
         <div><strong>No. REMISIÓN:</strong> {{ form.get('num_remision')?.value || '—' }}</div>
+        <div><strong>CUARENTENA:</strong> {{ form.get('cuarentena')?.value ? 'Sí' : 'No' }}</div>
+        <div><strong>DE BAJA:</strong> {{ form.get('de_baja')?.value ? 'Sí' : 'No' }}</div>
       </div>
 
       <div class="print-section-title">MOTIVO DE SOLICITUD PARA MANTENIMIENTO</div>
@@ -488,6 +508,67 @@ import type { MantenimientoReporte } from '../../utils/interface';
 
     .form-field.full-width {
       grid-column: 1 / -1;
+    }
+
+    .toggle-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      background: #f9fafb;
+    }
+
+    .toggle-field span {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #cbd5e1;
+      border-radius: 9999px;
+      transition: background 0.2s;
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .switch input:checked + .slider {
+      background: #2563eb;
+    }
+
+    .switch input:checked + .slider:before {
+      transform: translateX(20px);
     }
 
     .search-input-wrapper {
@@ -1077,6 +1158,8 @@ export class MantenimientoComponent implements OnInit {
       fecha_mantenimiento: [null],
       realizado_por: [null, Validators.required],
       supervisado_por: [null, Validators.required],
+      cuarentena: [false],
+      de_baja: [false],
       motivo: ['', Validators.required],
       descripcion: ['', Validators.required],
       observaciones: ['', Validators.required]
@@ -1187,6 +1270,8 @@ ngOnInit(): void {
       fecha_mantenimiento: reporte.fecha_mantenimiento,
       realizado_por: reporte.realizado_por,
       supervisado_por: reporte.supervisado_por,
+      cuarentena: reporte.cuarentena ?? false,
+      de_baja: reporte.de_baja ?? false,
       motivo: reporte.motivo,
       descripcion: reporte.descripcion,
       observaciones: reporte.observaciones
@@ -1266,6 +1351,8 @@ ngOnInit(): void {
       fecha_mantenimiento: null,
       realizado_por: null,
       supervisado_por: null,
+      cuarentena: false,
+      de_baja: false,
       motivo: '',
       descripcion: '',
       observaciones: ''
@@ -1327,6 +1414,8 @@ ngOnInit(): void {
       fecha_mantenimiento: formValue.fecha_mantenimiento,
       realizado_por: formValue.realizado_por,
       supervisado_por: formValue.supervisado_por,
+      cuarentena: formValue.cuarentena,
+      de_baja: formValue.de_baja,
       motivo: formValue.motivo,
       descripcion: formValue.descripcion,
       observaciones: formValue.observaciones

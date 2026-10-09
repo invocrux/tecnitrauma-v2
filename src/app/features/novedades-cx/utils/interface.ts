@@ -14,6 +14,7 @@ export interface NovedadCX {
   referencia: string;
   fecha_inspeccion: string;
   realizado_por: string | null;
+  supervisado_por: string | null;
   proveedor: string;
   continua_mantenimiento: boolean;
   cuarentena: boolean;
@@ -42,6 +43,7 @@ export interface NovedadCXForm {
   referencia: string;
   fecha_inspeccion: string;
   realizado_por: string | null;
+  supervisado_por: string | null;
   proveedor: string;
   continua_mantenimiento: boolean;
   cuarentena: boolean;

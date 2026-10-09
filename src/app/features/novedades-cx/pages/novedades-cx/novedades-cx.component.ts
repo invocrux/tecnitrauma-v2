@@ -152,6 +152,16 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
                 </div>
 
                 <div class="form-field">
+                  <label for="supervisadoPor">Supervisado por</label>
+                  <select id="supervisadoPor" [(ngModel)]="form.supervisado_por" name="supervisado_por" (ngModelChange)="onSupervisadoChange($event)">
+                    <option [ngValue]="null">Seleccionar...</option>
+                    @for (usuario of service.usuarios(); track usuario.id) {
+                      <option [value]="usuario.id">{{ usuario.full_name }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-field">
                   <label for="proveedor">Proveedor</label>
                   <select id="proveedor" [(ngModel)]="form.proveedor" name="proveedor">
                     <option [ngValue]="null">Seleccionar...</option>
@@ -395,8 +405,12 @@ import type { NovedadCXForm, NovedadCX } from '../../utils/interface';
         </div>
         <div class="print-signature-cell">
           <strong>REVISADO POR:</strong>
-          <div class="print-signature-image"></div>
-          <div><strong>NOMBRE Y CARGO:</strong> </div>
+          <div class="print-signature-image">
+            @if (supervisadoSignatureUrl()) {
+              <img [src]="supervisadoSignatureUrl()" alt="Firma de quien revisa" />
+            }
+          </div>
+          <div><strong>NOMBRE Y CARGO:</strong> {{ supervisadoName() || ' ' }}</div>
           <div><strong>FECHA:</strong> {{ formatPrintDate(form.fecha_inspeccion) }}</div>
         </div>
       </div>
@@ -969,6 +983,9 @@ export class NovedadesCXComponent implements OnInit {
   realizadoName = signal('');
   realizadoSignatureUrl = signal('');
   private realizadoLoadId = 0;
+  supervisadoName = signal('');
+  supervisadoSignatureUrl = signal('');
+  private supervisadoLoadId = 0;
 
   readonly tipoFallaOptions = [
     'Instrumental incompleto',
@@ -1041,6 +1058,7 @@ export class NovedadesCXComponent implements OnInit {
       referencia: '',
       fecha_inspeccion: this.service.getTodayDate(),
       realizado_por: null,
+      supervisado_por: null,
       proveedor: '',
       continua_mantenimiento: false,
       cuarentena: false,
@@ -1066,6 +1084,8 @@ export class NovedadesCXComponent implements OnInit {
     this.evidenciaUrl.set('');
     this.realizadoName.set('');
     this.realizadoSignatureUrl.set('');
+    this.supervisadoName.set('');
+    this.supervisadoSignatureUrl.set('');
     this.tipoFallaOtro = '';
   }
 
@@ -1079,6 +1099,7 @@ export class NovedadesCXComponent implements OnInit {
       this.errors.set({});
       void this.loadEvidenciaUrl(novedad.fotografia_evidencia);
       void this.loadRealizadoInfo(novedad.realizado_por);
+      void this.loadSupervisadoInfo(novedad.supervisado_por);
       if (novedad.serial) {
         const set = this.service.setsInstrumentales().find(s => s.serial === novedad.serial);
         if (set) {
@@ -1166,6 +1187,7 @@ export class NovedadesCXComponent implements OnInit {
       referencia: novedad.referencia || '',
       fecha_inspeccion: novedad.fecha_inspeccion,
       realizado_por: novedad.realizado_por,
+      supervisado_por: novedad.supervisado_por ?? null,
       proveedor: novedad.proveedor,
       continua_mantenimiento: novedad.continua_mantenimiento,
       cuarentena: novedad.cuarentena ?? false,
@@ -1183,6 +1205,10 @@ export class NovedadesCXComponent implements OnInit {
     void this.loadRealizadoInfo(userId);
   }
 
+  onSupervisadoChange(userId: string | null): void {
+    void this.loadSupervisadoInfo(userId);
+  }
+
   private async loadRealizadoInfo(userId: string | null | undefined): Promise<void> {
     const requestId = ++this.realizadoLoadId;
     this.realizadoName.set('');
@@ -1196,6 +1222,21 @@ export class NovedadesCXComponent implements OnInit {
     const signature = await this.profileService.getUserSignature(userId);
     if (requestId !== this.realizadoLoadId) return;
     this.realizadoSignatureUrl.set(signature?.firma_url || '');
+  }
+
+  private async loadSupervisadoInfo(userId: string | null | undefined): Promise<void> {
+    const requestId = ++this.supervisadoLoadId;
+    this.supervisadoName.set('');
+    this.supervisadoSignatureUrl.set('');
+
+    if (!userId) return;
+
+    const usuario = this.service.usuarios().find(u => u.id === userId);
+    this.supervisadoName.set(usuario?.full_name || '');
+
+    const signature = await this.profileService.getUserSignature(userId);
+    if (requestId !== this.supervisadoLoadId) return;
+    this.supervisadoSignatureUrl.set(signature?.firma_url || '');
   }
 
   private async loadEvidenciaUrl(value: string | null | undefined): Promise<void> {
@@ -1291,6 +1332,8 @@ export class NovedadesCXComponent implements OnInit {
         this.evidenciaUrl.set('');
         this.realizadoName.set('');
         this.realizadoSignatureUrl.set('');
+        this.supervisadoName.set('');
+        this.supervisadoSignatureUrl.set('');
       }
     }
   }

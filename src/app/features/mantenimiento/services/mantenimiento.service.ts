@@ -111,7 +111,7 @@ export class MantenimientoService {
 
     const { data, error } = await this.supabase.getClient()
       .from('mantenimiento_reportes')
-      .select('id, tipo, num_remision, marca_id, equipo_id, serial, pieza, referencia, fecha, fecha_mantenimiento, realizado_por, supervisado_por, motivo, descripcion, observaciones, estado, novedad_id, created_at, updated_at, created_by')
+      .select('id, tipo, num_remision, marca_id, equipo_id, serial, pieza, referencia, fecha, fecha_mantenimiento, realizado_por, supervisado_por, cuarentena, de_baja, motivo, descripcion, observaciones, estado, novedad_id, created_at, updated_at, created_by')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -149,6 +149,8 @@ export class MantenimientoService {
       fecha_mantenimiento: form.fecha_mantenimiento || null,
       realizado_por: form.realizado_por,
       supervisado_por: form.supervisado_por,
+      cuarentena: form.cuarentena,
+      de_baja: form.de_baja,
       motivo: form.motivo,
       descripcion: form.descripcion,
       observaciones: form.observaciones,

@@ -14,6 +14,8 @@ export interface MantenimientoReporte {
   fecha_mantenimiento?: string | null;
   realizado_por: string | null;
   supervisado_por: string | null;
+  cuarentena: boolean;
+  de_baja: boolean;
   motivo: string;
   descripcion: string;
   observaciones: string;
@@ -66,6 +68,8 @@ export interface MantenimientoForm {
   fecha_mantenimiento?: string | null;
   realizado_por: string | null;
   supervisado_por: string | null;
+  cuarentena: boolean;
+  de_baja: boolean;
   motivo: string;
   descripcion: string;
   observaciones: string;
