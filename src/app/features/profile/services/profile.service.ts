@@ -42,7 +42,7 @@ export class ProfileService {
     if (error) throw error;
 
     const { data: urlData } = this.supabase.getClient().storage.from(bucket).getPublicUrl(data.path);
-    return urlData.publicUrl;
+    return `${urlData.publicUrl}?v=${Date.now()}`;
   }
 
   async saveUserSignature(firmaUrl: string, userId?: string): Promise<boolean> {
@@ -60,7 +60,7 @@ export class ProfileService {
       .upsert({
         user_id: targetUserId,
         firma_url: firmaUrl
-      });
+      }, { onConflict: 'user_id' });
 
     this.isLoading.set(false);
 
@@ -87,7 +87,7 @@ export class ProfileService {
     if (error) throw error;
 
     const { data: urlData } = this.supabase.getClient().storage.from(bucket).getPublicUrl(data.path);
-    return urlData.publicUrl;
+    return `${urlData.publicUrl}?v=${Date.now()}`;
   }
 
   async saveProviderSignature(firmaUrl: string, providerId: string): Promise<boolean> {
@@ -98,7 +98,7 @@ export class ProfileService {
       .upsert({
         proveedor_id: providerId,
         firma_url: firmaUrl
-      });
+      }, { onConflict: 'proveedor_id' });
 
     this.isLoading.set(false);
 
